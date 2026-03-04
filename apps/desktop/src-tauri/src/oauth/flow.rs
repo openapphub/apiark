@@ -96,8 +96,31 @@ pub async fn execute_oauth_flow(
 struct TokenResponse {
     access_token: String,
     token_type: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_expires_in")]
     expires_in: Option<u64>,
     refresh_token: Option<String>,
+}
+
+/// Some providers return expires_in as a string ("3600") instead of a number.
+fn deserialize_expires_in<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de;
+
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum ExpiresIn {
+        Num(u64),
+        Str(String),
+        Null,
+    }
+
+    match ExpiresIn::deserialize(deserializer) {
+        Ok(ExpiresIn::Num(n)) => Ok(Some(n)),
+        Ok(ExpiresIn::Str(s)) => Ok(s.parse().ok()),
+        Ok(ExpiresIn::Null) | Err(_) => Ok(None),
+    }
 }
 
 fn token_from_response(resp: TokenResponse) -> OAuthToken {
@@ -141,10 +164,10 @@ async fn client_credentials_flow(
         return Err(format!("Token endpoint returned {status}: {body}"));
     }
 
-    let token_resp: TokenResponse = resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse token response: {e}"))?;
+    let body = resp.text().await.map_err(|e| format!("Failed to read token response body: {e}"))?;
+
+    let token_resp: TokenResponse = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse token response: {e}\nBody: {body}"))?;
 
     Ok(token_from_response(token_resp))
 }
@@ -184,10 +207,10 @@ async fn password_flow(
         return Err(format!("Token endpoint returned {status}: {body}"));
     }
 
-    let token_resp: TokenResponse = resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse token response: {e}"))?;
+    let body = resp.text().await.map_err(|e| format!("Failed to read token response body: {e}"))?;
+
+    let token_resp: TokenResponse = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse token response: {e}\nBody: {body}"))?;
 
     Ok(token_from_response(token_resp))
 }
@@ -296,10 +319,10 @@ async fn auth_code_flow(
         return Err(format!("Token endpoint returned {status}: {body}"));
     }
 
-    let token_resp: TokenResponse = resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse token response: {e}"))?;
+    let body = resp.text().await.map_err(|e| format!("Failed to read token response body: {e}"))?;
+
+    let token_resp: TokenResponse = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse token response: {e}\nBody: {body}"))?;
 
     Ok(token_from_response(token_resp))
 }
@@ -397,10 +420,10 @@ async fn refresh_token_flow(
         return Err(format!("Token refresh returned {status}: {body}"));
     }
 
-    let token_resp: TokenResponse = resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse token response: {e}"))?;
+    let body = resp.text().await.map_err(|e| format!("Failed to read token response body: {e}"))?;
+
+    let token_resp: TokenResponse = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse token response: {e}\nBody: {body}"))?;
 
     Ok(token_from_response(token_resp))
 }
