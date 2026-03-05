@@ -38,6 +38,9 @@ import { AlertCircle, X, RefreshCw, FileX, GitMerge, Shield, ArrowRightLeft } fr
 import { ToastContainer } from "@/components/ui/toast-container";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useResponsive } from "@/hooks/use-responsive";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
+import { StatusBar } from "@/components/layout/status-bar";
+import { PanelDivider } from "@/components/ui/panel-divider";
 
 function App() {
   const { newTab, closeTab, save, send, persistTabs, restoreTabs, undoTab, redoTab } = useTabStore();
@@ -303,8 +306,11 @@ function App() {
         </main>
       </div>
 
-      {/* Status bar / Console */}
+      {/* Console (expandable) */}
       <ConsoleBottomBar />
+
+      {/* Status bar */}
+      <StatusBar />
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <CurlImportDialog open={curlImportOpen} onOpenChange={setCurlImportOpen} />
@@ -350,6 +356,12 @@ function ProtocolView({
   urlBarRef: React.RefObject<HTMLInputElement | null>;
 }) {
   const { isCompact } = useResponsive();
+  const panelRatio = useSettingsStore((s) => s.settings.panelRatio);
+  const layout = useSettingsStore((s) => s.settings.layout);
+  const { updateSettings } = useSettingsStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const isVertical = isCompact || layout === "vertical";
 
   switch (protocol) {
     case "graphql":
@@ -363,12 +375,32 @@ function ProtocolView({
     default:
       return (
         <>
+          <Breadcrumb />
           <UrlBar ref={urlBarRef} />
-          <div className={`flex flex-1 overflow-hidden ${isCompact ? "flex-col" : "flex-row"}`}>
-            <div data-tour="request-panel" className={`flex flex-col ${isCompact ? "h-1/2 border-b" : "w-1/2 border-r"} border-[var(--color-border)]`}>
+          <div
+            ref={containerRef}
+            className={`flex flex-1 overflow-hidden ${isVertical ? "flex-col" : "flex-row"}`}
+          >
+            <div
+              data-tour="request-panel"
+              className="flex flex-col overflow-hidden"
+              style={isVertical
+                ? { height: `${panelRatio * 100}%` }
+                : { width: `${panelRatio * 100}%` }
+              }
+            >
               <RequestPanel />
             </div>
-            <div data-tour="response-panel" className={`flex flex-col ${isCompact ? "h-1/2" : "w-1/2"}`}>
+            <PanelDivider
+              direction={isVertical ? "vertical" : "horizontal"}
+              containerRef={containerRef}
+              onResize={(ratio) => updateSettings({ panelRatio: Math.round(ratio * 100) / 100 })}
+              onDoubleClick={() => updateSettings({ panelRatio: 0.5 })}
+            />
+            <div
+              data-tour="response-panel"
+              className="flex flex-1 flex-col overflow-hidden"
+            >
               <ResponsePanel />
             </div>
           </div>

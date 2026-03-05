@@ -29,6 +29,8 @@ const defaultSettings: AppSettings = {
   aiEndpoint: null,
   aiApiKey: null,
   aiModel: null,
+  panelRatio: 0.5,
+  layout: "horizontal",
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useConsoleStore, type ConsoleLogEntry } from "@/stores/console-store";
-import { Terminal, Trash2, ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { Terminal, Trash2, ChevronDown, Filter } from "lucide-react";
 
 export function ConsoleBottomBar() {
   const { entries, open, height, filter, toggle, clear, setHeight, setFilter } =
@@ -40,38 +40,8 @@ export function ConsoleBottomBar() {
     [height, setHeight],
   );
 
-  const hasErrors = entries.some((e) => e.level === "error");
-
   if (!open) {
-    return (
-      <div className="flex items-center border-t border-[var(--color-border)] bg-[var(--color-activity-bar)] px-1">
-        {/* Left status items */}
-        <button
-          onClick={toggle}
-          className="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-primary)]"
-        >
-          <Terminal className="h-3.5 w-3.5" />
-          Console
-          {entries.length > 0 && (
-            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-              hasErrors
-                ? "bg-[var(--color-error)]/20 text-[var(--color-error)]"
-                : "bg-[var(--color-accent)]/20 text-[var(--color-accent)]"
-            }`}>
-              {entries.length}
-            </span>
-          )}
-          <ChevronUp className="h-3 w-3 text-[var(--color-text-dimmed)]" />
-        </button>
-
-        <div className="flex-1" />
-
-        {/* Right status items */}
-        <span className="px-3 text-[11px] text-[var(--color-text-dimmed)]">
-          ApiArk v0.1.0
-        </span>
-      </div>
-    );
+    return null;
   }
 
   return (

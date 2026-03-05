@@ -51,6 +51,12 @@ pub struct AppSettings {
     /// AI assistant: model name
     #[serde(default)]
     pub ai_model: Option<String>,
+    /// Request/Response panel split ratio (0.0-1.0, proportion for request panel)
+    #[serde(default = "default_panel_ratio")]
+    pub panel_ratio: f64,
+    /// Layout mode: "horizontal" (side-by-side) or "vertical" (stacked)
+    #[serde(default = "default_layout")]
+    pub layout: String,
 }
 
 fn default_theme() -> String {
@@ -77,6 +83,14 @@ fn default_update_channel() -> String {
     "stable".to_string()
 }
 
+fn default_panel_ratio() -> f64 {
+    0.5
+}
+
+fn default_layout() -> String {
+    "horizontal".to_string()
+}
+
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
@@ -99,6 +113,8 @@ impl Default for AppSettings {
             ai_endpoint: None,
             ai_api_key: None,
             ai_model: None,
+            panel_ratio: default_panel_ratio(),
+            layout: default_layout(),
         }
     }
 }

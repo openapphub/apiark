@@ -97,6 +97,31 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </div>
               </div>
 
+              {/* Layout */}
+              <div className="mb-4">
+                <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">
+                  Panel Layout
+                </label>
+                <div className="flex gap-2">
+                  {([
+                    { value: "horizontal" as const, label: "Side by Side" },
+                    { value: "vertical" as const, label: "Stacked" },
+                  ]).map((l) => (
+                    <button
+                      key={l.value}
+                      onClick={() => update({ layout: l.value })}
+                      className={`rounded-lg border px-4 py-2 text-sm transition-all ${
+                        settings.layout === l.value
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
+                          : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-text-dimmed)]"
+                      }`}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Sidebar width */}
               <div>
                 <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">

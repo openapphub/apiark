@@ -302,6 +302,8 @@ export interface AppSettings {
   aiEndpoint: string | null;
   aiApiKey: string | null;
   aiModel: string | null;
+  panelRatio: number;
+  layout: "horizontal" | "vertical";
 }
 
 // ── Tab Protocol ──
