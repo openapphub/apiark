@@ -1,6 +1,7 @@
 mod commands;
 mod mqtt;
 mod plugins;
+mod proxy;
 mod docs;
 mod exporter;
 mod grpc;
@@ -55,6 +56,8 @@ use commands::plugins::{list_plugins, toggle_plugin, uninstall_plugin, install_p
 use commands::mqtt::{mqtt_connect, mqtt_subscribe, mqtt_publish, mqtt_disconnect};
 use commands::socketio::socketio_build_url;
 use plugins::manager::PluginManager;
+use commands::proxy::{proxy_start, proxy_stop, proxy_status, proxy_get_captures, proxy_clear_captures, proxy_set_passthrough};
+use proxy::capture::ProxyCaptureManager;
 use mqtt::client::MqttManager;
 use oauth::OAuthTokenStore;
 use http::cookies::CookieJarManager;
@@ -163,11 +166,13 @@ pub fn run() {
         .manage(MonitorManager::new())
         .manage(PluginManager::new(&apiark_dir))
         .manage(MqttManager::new())
+        .manage(ProxyCaptureManager::new())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_deep_link::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             send_request,
@@ -269,6 +274,13 @@ pub fn run() {
             mqtt_subscribe,
             mqtt_publish,
             mqtt_disconnect,
+            // Proxy capture commands
+            proxy_start,
+            proxy_stop,
+            proxy_status,
+            proxy_get_captures,
+            proxy_clear_captures,
+            proxy_set_passthrough,
             // Plugin commands
             list_plugins,
             toggle_plugin,

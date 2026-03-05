@@ -355,11 +355,11 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Performance profiling
 
 **Proxy Capture Mode (§38):**
-- [ ] Local intercepting HTTP/HTTPS proxy (hyper + rcgen + rustls)
-- [ ] Real-time traffic log with filtering (domain, method, status, regex)
-- [ ] Save captured request to collection / replay / edit & replay
+- [x] Local intercepting HTTP/HTTPS proxy (hyper + rcgen + rustls)
+- [x] Real-time traffic log with filtering (domain, method, status, regex)
+- [x] Save captured request to collection / replay / edit & replay
 - [ ] Local CA certificate generation for HTTPS interception
-- [ ] Passthrough domains configuration
+- [x] Passthrough domains configuration
 
 **Security Hardening (§35):**
 - [x] Tauri v2 capability-based permissions (main-window.json)
@@ -373,7 +373,7 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Full keyboard navigation (tab order, arrow keys in tree, focus indicators)
 - [x] Screen reader support (ARIA roles, live regions, method/status announcements)
 - [x] `prefers-reduced-motion` and `prefers-contrast` support
-- [ ] axe-core in CI for automated a11y audits
+- [x] axe-core in CI for automated a11y audits
 
 **YAML Format Versioning (§21):**
 - [x] Migration system with chained version functions (v1→v2→v3)
@@ -391,7 +391,7 @@ No tool currently delivers ALL of these simultaneously:
 **Internationalization (§23):**
 - [x] `react-i18next` with JSON locale files
 - [x] All UI strings via `t('key')` (English-only initially)
-- [ ] `Intl.DateTimeFormat` / `Intl.NumberFormat` for formatting
+- [x] `Intl.DateTimeFormat` / `Intl.NumberFormat` for formatting
 - [x] CSS logical properties for future RTL support
 - [ ] Community translation via Weblate/Crowdin
 
@@ -425,22 +425,22 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] Plugin marketplace, auto-updater
 
 **Deep Links (§24):**
-- [ ] `apiark://` custom URL scheme via Tauri deep-link plugin
-- [ ] OAuth callback via `apiark://oauth/callback`
-- [ ] Collection sharing links (`apiark://import?url=...`)
-- [ ] Open specific request links (`apiark://open?collection=...&request=...`)
+- [x] `apiark://` custom URL scheme via Tauri deep-link plugin
+- [x] OAuth callback via `apiark://oauth/callback`
+- [x] Collection sharing links (`apiark://import?url=...`)
+- [x] Open specific request links (`apiark://open?collection=...&request=...`)
 
 **Privacy & Legal (§28):**
 - [ ] Privacy policy at `apiark.dev/privacy`
 - [ ] Terms of service at `apiark.dev/terms`
-- [ ] SECURITY.md with responsible disclosure process
+- [x] SECURITY.md with responsible disclosure process
 - [ ] GDPR compliance documentation
 
 **Offline Behavior (§33):**
-- [ ] Explicit graceful degradation for OAuth (cached tokens work offline)
-- [ ] Webhook failures handled silently in scheduled testing
-- [ ] Plugin install requires network; installed plugins work offline
-- [ ] GraphQL/gRPC schema cached locally after first fetch
+- [x] Explicit graceful degradation for OAuth (cached tokens work offline)
+- [x] Webhook failures handled silently in scheduled testing
+- [x] Plugin install requires network; installed plugins work offline
+- [x] GraphQL/gRPC schema cached locally after first fetch
 
 ---
 

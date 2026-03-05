@@ -635,3 +635,48 @@ export async function mqttDisconnect(connectionId: string): Promise<void> {
 export async function socketioBuildUrl(url: string, namespace: string): Promise<string> {
   return await invoke<string>("socketio_build_url", { url, namespace });
 }
+
+// ── Proxy Capture ──
+
+export interface CapturedRequest {
+  id: string;
+  method: string;
+  url: string;
+  requestHeaders: Record<string, string>;
+  requestBody: string | null;
+  status: number | null;
+  responseHeaders: Record<string, string>;
+  responseBody: string | null;
+  timeMs: number;
+  timestamp: string;
+}
+
+export interface ProxyStatus {
+  running: boolean;
+  port: number;
+  captureCount: number;
+}
+
+export async function proxyStart(port: number): Promise<ProxyStatus> {
+  return await invoke<ProxyStatus>("proxy_start", { port });
+}
+
+export async function proxyStop(): Promise<ProxyStatus> {
+  return await invoke<ProxyStatus>("proxy_stop", {});
+}
+
+export async function proxyGetStatus(): Promise<ProxyStatus> {
+  return await invoke<ProxyStatus>("proxy_status", {});
+}
+
+export async function proxyGetCaptures(): Promise<CapturedRequest[]> {
+  return await invoke<CapturedRequest[]>("proxy_get_captures", {});
+}
+
+export async function proxyClearCaptures(): Promise<void> {
+  return await invoke<void>("proxy_clear_captures", {});
+}
+
+export async function proxySetPassthrough(domains: string[]): Promise<void> {
+  return await invoke<void>("proxy_set_passthrough", { domains });
+}

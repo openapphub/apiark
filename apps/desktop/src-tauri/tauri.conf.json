@@ -24,6 +24,12 @@
     }
   },
   "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["apiark"]
+      }
+    },
     "updater": {
       "endpoints": [
         "https://releases.apiark.dev/{{target}}/{{arch}}/{{current_version}}"
