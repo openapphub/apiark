@@ -59,6 +59,7 @@ export function RequestPanel() {
         {TABS.map((t) => (
           <button
             key={t.id}
+            data-tour={`tab-${t.id}`}
             onClick={() => setActiveTab(t.id)}
             className={`px-4 py-2 text-sm transition-colors ${
               activeTab === t.id
@@ -385,6 +386,28 @@ function AuthEditor({
                 usePkce: true,
               });
               break;
+            case "digest":
+              onChange({ type: "digest", username: "", password: "" });
+              break;
+            case "aws-v4":
+              onChange({
+                type: "aws-v4",
+                accessKey: "",
+                secretKey: "",
+                region: "",
+                service: "",
+                sessionToken: "",
+              });
+              break;
+            case "jwt-bearer":
+              onChange({
+                type: "jwt-bearer",
+                secret: "",
+                algorithm: "HS256",
+                payload: '{\n  "sub": "1234567890",\n  "iat": 0\n}',
+                headerPrefix: "Bearer",
+              });
+              break;
           }
         }}
         className={SELECT_CLASS}
@@ -394,6 +417,9 @@ function AuthEditor({
         <option value="basic">Basic Auth</option>
         <option value="api-key">API Key</option>
         <option value="oauth2">OAuth 2.0</option>
+        <option value="digest">Digest Auth</option>
+        <option value="aws-v4">AWS Signature v4</option>
+        <option value="jwt-bearer">JWT Bearer</option>
       </select>
 
       {/* Auth fields */}
@@ -457,6 +483,105 @@ function AuthEditor({
 
       {auth.type === "oauth2" && (
         <OAuth2Editor auth={auth} onChange={onChange} />
+      )}
+
+      {auth.type === "digest" && (
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={auth.username}
+            onChange={(e) => onChange({ ...auth, username: e.target.value })}
+            placeholder="Username"
+            className={INPUT_CLASS}
+          />
+          <input
+            type="password"
+            value={auth.password}
+            onChange={(e) => onChange({ ...auth, password: e.target.value })}
+            placeholder="Password"
+            className={INPUT_CLASS}
+          />
+        </div>
+      )}
+
+      {auth.type === "aws-v4" && (
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={auth.accessKey}
+            onChange={(e) => onChange({ ...auth, accessKey: e.target.value })}
+            placeholder="Access Key"
+            className={INPUT_CLASS}
+          />
+          <input
+            type="password"
+            value={auth.secretKey}
+            onChange={(e) => onChange({ ...auth, secretKey: e.target.value })}
+            placeholder="Secret Key"
+            className={INPUT_CLASS}
+          />
+          <input
+            type="text"
+            value={auth.region}
+            onChange={(e) => onChange({ ...auth, region: e.target.value })}
+            placeholder="Region (e.g. us-east-1)"
+            className={INPUT_CLASS}
+          />
+          <input
+            type="text"
+            value={auth.service}
+            onChange={(e) => onChange({ ...auth, service: e.target.value })}
+            placeholder="Service (e.g. s3, execute-api)"
+            className={INPUT_CLASS}
+          />
+          <input
+            type="text"
+            value={auth.sessionToken}
+            onChange={(e) => onChange({ ...auth, sessionToken: e.target.value })}
+            placeholder="Session Token (optional)"
+            className={INPUT_CLASS}
+          />
+        </div>
+      )}
+
+      {auth.type === "jwt-bearer" && (
+        <div className="space-y-2">
+          <select
+            value={auth.algorithm}
+            onChange={(e) => onChange({ ...auth, algorithm: e.target.value })}
+            className={SELECT_CLASS}
+          >
+            <option value="HS256">HS256</option>
+            <option value="HS384">HS384</option>
+            <option value="HS512">HS512</option>
+            <option value="RS256">RS256</option>
+            <option value="RS384">RS384</option>
+            <option value="RS512">RS512</option>
+            <option value="ES256">ES256</option>
+            <option value="ES384">ES384</option>
+          </select>
+          <input
+            type="password"
+            value={auth.secret}
+            onChange={(e) => onChange({ ...auth, secret: e.target.value })}
+            placeholder={auth.algorithm.startsWith("HS") ? "HMAC Secret" : "Private Key (PEM)"}
+            className={INPUT_CLASS}
+          />
+          <textarea
+            value={auth.payload}
+            onChange={(e) => onChange({ ...auth, payload: e.target.value })}
+            placeholder='{"sub": "user", "iat": 0}'
+            rows={5}
+            className={INPUT_CLASS + " resize-y font-mono"}
+          />
+          <input
+            type="text"
+            value={auth.headerPrefix}
+            onChange={(e) => onChange({ ...auth, headerPrefix: e.target.value })}
+            placeholder="Header Prefix (default: Bearer)"
+            className={INPUT_CLASS}
+          />
+        </div>
       )}
     </div>
   );

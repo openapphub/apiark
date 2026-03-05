@@ -320,6 +320,12 @@ export async function exportCollection(
   return await invoke<string>("export_collection", { collectionPath, format });
 }
 
+// ── Sample Collection ──
+
+export async function createSampleCollection(): Promise<string> {
+  return await invoke<string>("create_sample_collection", {});
+}
+
 // ── Settings ──
 
 export async function getSettings(): Promise<AppSettings> {

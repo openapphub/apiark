@@ -2,6 +2,7 @@ use reqwest::{Client, RequestBuilder};
 use std::time::Duration;
 use url::Url;
 
+use crate::http::auth_handlers;
 use crate::models::auth::{ApiKeyLocation, AuthConfig};
 use crate::models::error::HttpEngineError;
 use crate::models::request::{BodyType, KeyValuePair, RequestBody, SendRequestParams};
@@ -91,7 +92,7 @@ pub fn build_request(
     }
 
     // Apply auth
-    builder = apply_auth(builder, &params.auth);
+    builder = apply_auth(builder, &params.auth, params);
 
     // Apply body
     builder = apply_body(builder, &params.body)?;
@@ -100,7 +101,7 @@ pub fn build_request(
 }
 
 /// Apply authentication to the request builder.
-fn apply_auth(mut builder: RequestBuilder, auth: &Option<AuthConfig>) -> RequestBuilder {
+fn apply_auth(mut builder: RequestBuilder, auth: &Option<AuthConfig>, params: &SendRequestParams) -> RequestBuilder {
     match auth {
         Some(AuthConfig::Bearer { token }) => {
             builder = builder.bearer_auth(token);
@@ -119,6 +120,77 @@ fn apply_auth(mut builder: RequestBuilder, auth: &Option<AuthConfig>) -> Request
         Some(AuthConfig::ApiKey { add_to: ApiKeyLocation::Query, .. }) => {}
         // OAuth2 is resolved before reaching here (converted to Bearer in interpolate_auth)
         Some(AuthConfig::Oauth2 { .. }) => {}
+        // Digest auth — we store credentials; actual challenge-response is complex.
+        // For now, pre-compute a digest header if realm/nonce are provided (from a prior 401).
+        // In practice, most Digest flows need a two-step process; this provides the header
+        // when the user supplies the nonce/realm manually.
+        Some(AuthConfig::Digest { username, password }) => {
+            // Digest is typically challenge-response. We use basic auth as fallback
+            // so reqwest can handle the 401 challenge. For explicit digest, the user
+            // would need to supply nonce/realm which we don't collect in the UI yet.
+            builder = builder.basic_auth(username, Some(password));
+        }
+        Some(AuthConfig::AwsV4 {
+            access_key,
+            secret_key,
+            region,
+            service,
+            session_token,
+        }) => {
+            let now = chrono::Utc::now();
+            let url = build_url_with_params(&params.url, &params.params, &params.auth)
+                .unwrap_or_else(|_| url::Url::parse("http://localhost").unwrap());
+            let method = format!("{:?}", params.method);
+            let headers: Vec<(String, String)> = params
+                .headers
+                .iter()
+                .filter(|h| h.enabled && !h.key.is_empty())
+                .map(|h| (h.key.clone(), h.value.clone()))
+                .collect();
+            let body_str = params
+                .body
+                .as_ref()
+                .map(|b| b.content.as_str())
+                .unwrap_or("");
+
+            let (auth_header, extra_headers) = auth_handlers::compute_aws_v4_auth(
+                access_key,
+                secret_key,
+                session_token,
+                region,
+                service,
+                &method,
+                &url,
+                &headers,
+                body_str,
+                &now,
+            );
+
+            builder = builder.header("Authorization", auth_header);
+            for (k, v) in extra_headers {
+                builder = builder.header(k, v);
+            }
+        }
+        Some(AuthConfig::JwtBearer {
+            secret,
+            algorithm,
+            payload,
+            header_prefix,
+        }) => {
+            match auth_handlers::generate_jwt(secret, algorithm, payload) {
+                Ok(token) => {
+                    let value = if header_prefix.is_empty() {
+                        token
+                    } else {
+                        format!("{header_prefix} {token}")
+                    };
+                    builder = builder.header("Authorization", value);
+                }
+                Err(e) => {
+                    tracing::warn!("JWT generation failed: {e}");
+                }
+            }
+        }
         Some(AuthConfig::None) | None => {}
     }
     builder

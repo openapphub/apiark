@@ -74,7 +74,7 @@ export const UrlBar = forwardRef<HTMLInputElement>(function UrlBar(_props, ref) 
   };
 
   return (
-    <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
+    <div data-tour="url-bar" className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
       {/* Method selector */}
       <select
         value={tab.method}
@@ -142,6 +142,7 @@ export const UrlBar = forwardRef<HTMLInputElement>(function UrlBar(_props, ref) 
 
       {/* Send button */}
       <button
+        data-tour="send-btn"
         onClick={send}
         disabled={tab.loading || !tab.url.trim()}
         className="flex items-center gap-1.5 rounded bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"

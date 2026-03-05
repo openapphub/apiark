@@ -190,7 +190,7 @@ export function TabBar() {
   if (tabs.length === 0) return null;
 
   return (
-    <div className="flex items-center border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+    <div data-tour="tabs" className="flex items-center border-b border-[var(--color-border)] bg-[var(--color-bg)]">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

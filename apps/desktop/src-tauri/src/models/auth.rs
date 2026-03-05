@@ -40,6 +40,37 @@ pub enum AuthConfig {
         #[serde(default = "default_true", rename = "usePkce")]
         use_pkce: bool,
     },
+    Digest {
+        username: String,
+        password: String,
+    },
+    #[serde(rename = "aws-v4")]
+    AwsV4 {
+        #[serde(rename = "accessKey")]
+        access_key: String,
+        #[serde(rename = "secretKey")]
+        secret_key: String,
+        #[serde(default)]
+        region: String,
+        #[serde(default)]
+        service: String,
+        #[serde(default, rename = "sessionToken")]
+        session_token: String,
+    },
+    #[serde(rename = "jwt-bearer")]
+    JwtBearer {
+        /// HMAC secret or RSA/EC private key (PEM)
+        secret: String,
+        /// Algorithm: HS256, HS384, HS512, RS256, etc.
+        #[serde(default = "default_hs256")]
+        algorithm: String,
+        /// JSON payload for the JWT claims
+        #[serde(default)]
+        payload: String,
+        /// Header prefix (default: "Bearer")
+        #[serde(default = "default_bearer_prefix", rename = "headerPrefix")]
+        header_prefix: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -70,4 +101,12 @@ fn default_callback_url() -> String {
 
 fn default_true() -> bool {
     true
+}
+
+fn default_hs256() -> String {
+    "HS256".to_string()
+}
+
+fn default_bearer_prefix() -> String {
+    "Bearer".to_string()
 }

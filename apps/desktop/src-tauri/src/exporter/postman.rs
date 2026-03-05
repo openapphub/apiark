@@ -229,5 +229,26 @@ fn export_auth(auth: &AuthConfig) -> Option<Value> {
             // OAuth2 export is complex and Postman has its own format — skip
             None
         }
+        AuthConfig::Digest { username, password } => Some(json!({
+            "type": "digest",
+            "digest": [
+                {"key": "username", "value": username, "type": "string"},
+                {"key": "password", "value": password, "type": "string"}
+            ]
+        })),
+        AuthConfig::AwsV4 { access_key, secret_key, region, service, session_token } => Some(json!({
+            "type": "awsv4",
+            "awsv4": [
+                {"key": "accessKey", "value": access_key, "type": "string"},
+                {"key": "secretKey", "value": secret_key, "type": "string"},
+                {"key": "region", "value": region, "type": "string"},
+                {"key": "service", "value": service, "type": "string"},
+                {"key": "sessionToken", "value": session_token, "type": "string"}
+            ]
+        })),
+        AuthConfig::JwtBearer { .. } => {
+            // JWT Bearer has no direct Postman equivalent
+            None
+        }
     }
 }

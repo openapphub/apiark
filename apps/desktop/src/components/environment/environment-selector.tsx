@@ -29,6 +29,7 @@ export const EnvironmentSelector = forwardRef<HTMLSelectElement>(
     return (
       <select
         ref={ref}
+        data-tour="environment"
         value={activeEnvironmentName ?? ""}
         onChange={(e) =>
           setActiveEnvironment(e.target.value || null)

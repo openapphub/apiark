@@ -64,6 +64,22 @@ export type AuthConfig =
       username: string;
       password: string;
       usePkce: boolean;
+    }
+  | { type: "digest"; username: string; password: string }
+  | {
+      type: "aws-v4";
+      accessKey: string;
+      secretKey: string;
+      region: string;
+      service: string;
+      sessionToken: string;
+    }
+  | {
+      type: "jwt-bearer";
+      secret: string;
+      algorithm: string;
+      payload: string;
+      headerPrefix: string;
     };
 
 export interface OAuthTokenStatus {
@@ -241,6 +257,7 @@ export interface AppSettings {
   followRedirects: boolean;
   timeoutMs: number;
   sidebarWidth: number;
+  onboardingComplete: boolean;
 }
 
 // ── Tab Protocol ──

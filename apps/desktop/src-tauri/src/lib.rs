@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 
 use commands::collection::{
     create_folder, create_request, delete_item, open_collection, read_request_file, rename_item,
-    save_folder_order, save_request_file,
+    create_sample_collection, save_folder_order, save_request_file,
 };
 use commands::environment::{get_resolved_variables, load_environments, save_environment};
 use commands::greet;
@@ -35,17 +35,26 @@ use storage::settings;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Initialize history database
+    let apiark_dir = dirs::home_dir()
+        .expect("Could not determine home directory")
+        .join(".apiark");
+
+    // Set up logging with file rotation
+    let log_dir = apiark_dir.join("logs");
+    let _ = std::fs::create_dir_all(&log_dir);
+    let file_appender = tracing_appender::rolling::daily(&log_dir, "apiark.log");
+    // _guard must be kept alive for the app's lifetime to flush logs
+    let (non_blocking, _log_guard) = tracing_appender::non_blocking(file_appender);
+
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| "apiark=info".into()),
         )
+        .with_writer(non_blocking)
+        .with_ansi(false)
         .init();
-
-    // Initialize history database
-    let apiark_dir = dirs::home_dir()
-        .expect("Could not determine home directory")
-        .join(".apiark");
 
     let db_path = apiark_dir.join("data.db");
 
@@ -100,6 +109,7 @@ pub fn run() {
             delete_item,
             rename_item,
             save_folder_order,
+            create_sample_collection,
             // Environment commands
             load_environments,
             save_environment,

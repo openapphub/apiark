@@ -21,6 +21,8 @@ pub struct AppSettings {
     pub timeout_ms: u64,
     #[serde(default = "default_sidebar_width")]
     pub sidebar_width: u32,
+    #[serde(default)]
+    pub onboarding_complete: bool,
 }
 
 fn default_theme() -> String {
@@ -50,6 +52,7 @@ impl Default for AppSettings {
             follow_redirects: true,
             timeout_ms: default_timeout(),
             sidebar_width: default_sidebar_width(),
+            onboarding_complete: false,
         }
     }
 }

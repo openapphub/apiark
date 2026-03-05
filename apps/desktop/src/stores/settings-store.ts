@@ -18,6 +18,7 @@ const defaultSettings: AppSettings = {
   followRedirects: true,
   timeoutMs: 30000,
   sidebarWidth: 256,
+  onboardingComplete: false,
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({

@@ -50,6 +50,7 @@ export function CollectionSidebar({ onOpenSettings, collapsed, envSelectorRef }:
 
   return (
     <aside
+      data-tour="sidebar"
       className="flex shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]"
       style={{ width: `${sidebarWidth}px` }}
     >

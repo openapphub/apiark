@@ -250,10 +250,10 @@ No tool currently delivers ALL of these simultaneously:
 
 **Advanced Authentication:**
 - [x] OAuth 2.0 (Authorization Code, Client Credentials, Implicit, Password, PKCE)
-- [ ] Digest Auth
-- [ ] AWS Signature v4
+- [x] Digest Auth
+- [x] AWS Signature v4
 - [ ] NTLM
-- [ ] JWT Bearer (built-in JWT generation)
+- [x] JWT Bearer (built-in JWT generation)
 
 **Scripting Engine:**
 - [x] Pre-request scripts (JavaScript/TypeScript)
@@ -292,15 +292,15 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] Export to ApiArk YAML
 
 **CLI Tool (`apiark`):**
-- [ ] `apiark run`, `apiark import`, `apiark export`
-- [ ] Reporters: json, junit, html
+- [x] `apiark run`, `apiark import`, `apiark export`
+- [x] Reporters: json, junit, html
 - [ ] npm package: `@apiark/cli`
 
 **Auto-Save (§29):**
-- [ ] Debounced 1s auto-save for saved requests (atomic write)
-- [ ] Unsaved-on-quit dialog for new requests
-- [ ] `Ctrl+S` forces immediate save
-- [ ] Auto-save failure banner with retry
+- [x] Debounced 1s auto-save for saved requests (atomic write)
+- [x] Unsaved-on-quit dialog for new requests
+- [x] `Ctrl+S` forces immediate save
+- [x] Auto-save failure banner with retry
 
 **Undo/Redo (§34):**
 - [ ] Per-tab undo/redo stack (100 depth) for request editing
@@ -315,17 +315,17 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] Git merge conflict marker detection
 
 **Onboarding (§26):**
-- [ ] Welcome screen (start from scratch / import / open folder)
-- [ ] Sample collection with example requests (httpbin.org)
+- [x] Welcome screen (start from scratch / import / open folder)
+- [x] Sample collection with example requests (httpbin.org)
 - [ ] Contextual hints (dismissible, shown once)
-- [ ] Empty states with action buttons for all panels
+- [x] Empty states with action buttons for all panels
 
 **Error Handling & Logging (§19):**
-- [ ] `tracing` log rotation (daily, 7 days / 50MB max)
-- [ ] SQLite integrity check on startup with auto-recovery
+- [x] `tracing` log rotation (daily, 7 days / 50MB max)
+- [x] SQLite integrity check on startup with auto-recovery
 - [ ] Opt-in crash report banner (local JSON files)
 - [ ] In-app Console panel (bottom bar) for logs and script output
-- [ ] Categorized network errors with suggestions
+- [x] Categorized network errors with suggestions
 
 **Scalability (§25):**
 - [ ] Virtual scrolling for collection tree and history (TanStack Virtual)

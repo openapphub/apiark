@@ -23,6 +23,7 @@ import { useSettingsStore } from "./settings-store";
 interface TabState {
   tabs: Tab[];
   activeTabId: string | null;
+  autoSaveError: string | null;
 
   // Tab management
   newTab: () => void;
@@ -59,7 +60,10 @@ interface TabState {
   // Actions
   send: () => Promise<void>;
   save: () => Promise<void>;
+  autoSave: () => Promise<void>;
+  clearAutoSaveError: () => void;
   clearResponse: () => void;
+  hasUnsavedNewTabs: () => boolean;
 
   // Persistence
   persistTabs: () => void;
@@ -248,6 +252,7 @@ function updateActiveTab(
 export const useTabStore = create<TabState>((set, get) => ({
   tabs: [],
   activeTabId: null,
+  autoSaveError: null,
 
   newTab: () => {
     const tab = createEmptyTab();
@@ -512,6 +517,33 @@ export const useTabStore = create<TabState>((set, get) => ({
     } catch (err) {
       console.error("Failed to save request:", err);
     }
+  },
+
+  autoSave: async () => {
+    const { tabs, activeTabId } = get();
+    const tab = tabs.find((t) => t.id === activeTabId);
+    if (!tab || !tab.filePath || !tab.isDirty) return;
+
+    try {
+      const requestFile = tabToRequestFile(tab);
+      await saveRequestFile(tab.filePath, requestFile);
+      set({
+        autoSaveError: null,
+        tabs: get().tabs.map((t) =>
+          t.id === activeTabId ? { ...t, isDirty: false } : t,
+        ),
+      });
+    } catch (err) {
+      set({ autoSaveError: String(err) });
+    }
+  },
+
+  clearAutoSaveError: () => {
+    set({ autoSaveError: null });
+  },
+
+  hasUnsavedNewTabs: () => {
+    return get().tabs.some((t) => !t.filePath && (t.url.trim() || t.body.content.trim()));
   },
 
   clearResponse: () => {

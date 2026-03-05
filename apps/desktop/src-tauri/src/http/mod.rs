@@ -1,3 +1,4 @@
+pub mod auth_handlers;
 pub mod client;
 pub mod curl;
 pub mod error_classifier;

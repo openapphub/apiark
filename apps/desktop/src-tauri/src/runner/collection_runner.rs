@@ -168,6 +168,23 @@ fn interpolate_auth(auth: &AuthConfig, vars: &HashMap<String, String>) -> AuthCo
             password: interpolation::interpolate(password, vars),
             use_pkce: *use_pkce,
         },
+        AuthConfig::Digest { username, password } => AuthConfig::Digest {
+            username: interpolation::interpolate(username, vars),
+            password: interpolation::interpolate(password, vars),
+        },
+        AuthConfig::AwsV4 { access_key, secret_key, region, service, session_token } => AuthConfig::AwsV4 {
+            access_key: interpolation::interpolate(access_key, vars),
+            secret_key: interpolation::interpolate(secret_key, vars),
+            region: interpolation::interpolate(region, vars),
+            service: interpolation::interpolate(service, vars),
+            session_token: interpolation::interpolate(session_token, vars),
+        },
+        AuthConfig::JwtBearer { secret, algorithm, payload, header_prefix } => AuthConfig::JwtBearer {
+            secret: interpolation::interpolate(secret, vars),
+            algorithm: algorithm.clone(),
+            payload: interpolation::interpolate(payload, vars),
+            header_prefix: header_prefix.clone(),
+        },
     }
 }
 
