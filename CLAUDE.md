@@ -167,134 +167,183 @@ No tool currently delivers ALL of these simultaneously:
 
 ## 5. Feature Matrix — Full Inventory
 
-### Phase 1 — MVP (Days 1-90)
+### Phase 1 — MVP (Days 1-90) — COMPLETE
 
 **Core HTTP Client:**
-- [ ] URL bar with method selector (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
-- [ ] Request body editor: JSON, XML, Form Data, URL-encoded, Raw Text, Binary, None
-- [ ] Headers editor (key-value table with enable/disable toggles, bulk edit)
-- [ ] Query parameters editor (key-value table with enable/disable toggles)
+- [x] URL bar with method selector (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- [x] Request body editor: JSON, XML, Form Data, URL-encoded, Raw Text, Binary, None
+- [x] Headers editor (key-value table with enable/disable toggles, bulk edit)
+- [x] Query parameters editor (key-value table with enable/disable toggles)
 - [ ] Path variables (`:paramName` in URL auto-detected)
-- [ ] Response viewer: Pretty (syntax-highlighted JSON/XML/HTML), Raw, Preview (HTML render)
-- [ ] Response metadata: status code (color-coded), response time (ms), response size (bytes/KB/MB)
-- [ ] Response headers viewer
-- [ ] Response cookies viewer
+- [x] Response viewer: Pretty (syntax-highlighted JSON/XML/HTML), Raw, Preview (HTML render)
+- [x] Response metadata: status code (color-coded), response time (ms), response size (bytes/KB/MB)
+- [x] Response headers viewer
+- [x] Response cookies viewer
 - [ ] Copy response to clipboard, save response to file
-- [ ] cURL import (paste cURL -> auto-parse to request)
-- [ ] cURL export (any request -> copy as cURL)
-- [ ] Code generation (JavaScript fetch, Python requests, cURL)
+- [x] cURL import (paste cURL -> auto-parse to request)
+- [x] cURL export (any request -> copy as cURL)
+- [x] Code generation (JavaScript fetch, Python requests, cURL)
 
 **Collections & Organization:**
-- [ ] Create/rename/delete collections
-- [ ] Create/rename/delete folders (unlimited nesting)
-- [ ] Create/rename/delete/duplicate requests
+- [x] Create/rename/delete collections
+- [x] Create/rename/delete folders (unlimited nesting)
+- [x] Create/rename/delete/duplicate requests
 - [ ] Drag-and-drop reordering of requests and folders
-- [ ] Collection stored as directory on filesystem
-- [ ] Each request = one `.yaml` file
-- [ ] Collection config = `apiark.yaml` at collection root
+- [x] Collection stored as directory on filesystem
+- [x] Each request = one `.yaml` file
+- [x] Collection config = `apiark.yaml` at collection root
 - [ ] Request search/filter across all collections
 
 **Tabbed Interface:**
-- [ ] Multiple request tabs (like browser tabs)
-- [ ] Tab persistence across sessions
-- [ ] Unsaved changes indicator (dot on tab)
-- [ ] Close / Close Others / Close All
+- [x] Multiple request tabs (like browser tabs)
+- [x] Tab persistence across sessions
+- [x] Unsaved changes indicator (dot on tab)
+- [x] Close / Close Others / Close All
 - [ ] Tab reordering via drag-and-drop
 
 **Environment Variables:**
-- [ ] Global environment (applies to all collections)
-- [ ] Collection-scoped environments
-- [ ] Multiple named environments per collection (dev, staging, prod)
-- [ ] One-click environment switching (dropdown in header)
-- [ ] Variable reference: `{{variableName}}` syntax
+- [x] Global environment (applies to all collections)
+- [x] Collection-scoped environments
+- [x] Multiple named environments per collection (dev, staging, prod)
+- [x] One-click environment switching (dropdown in header)
+- [x] Variable reference: `{{variableName}}` syntax
 - [ ] Variable quick-view (eye icon to peek current values)
-- [ ] Secret variables (masked in UI, excluded from Git)
+- [x] Secret variables (masked in UI, excluded from Git)
 - [ ] `.env` file support (auto-load from collection root)
-- [ ] Environment files stored as `environments/*.yaml`
+- [x] Environment files stored as `environments/*.yaml`
 
 **Basic Authentication:**
-- [ ] None
-- [ ] Bearer Token
-- [ ] Basic Auth (username/password)
-- [ ] API Key (header or query parameter)
-- [ ] Auth inheritance (collection -> folder -> request)
+- [x] None
+- [x] Bearer Token
+- [x] Basic Auth (username/password)
+- [x] API Key (header or query parameter)
+- [x] Auth inheritance (collection -> folder -> request)
 
 **Request History:**
-- [ ] Auto-save every sent request to history
-- [ ] Searchable history
-- [ ] Restore request from history
-- [ ] Clear history
+- [x] Auto-save every sent request to history
+- [x] Searchable history
+- [x] Restore request from history
+- [x] Clear history
 
 **Settings:**
-- [ ] Proxy configuration (HTTP/SOCKS)
-- [ ] SSL certificate verification toggle
+- [x] Proxy configuration (HTTP/SOCKS)
+- [x] SSL certificate verification toggle
 - [ ] Custom CA certificates
 - [ ] Client certificates (PFX, PEM)
-- [ ] Request timeout configuration
-- [ ] Follow redirects toggle
-- [ ] Theme: Light / Dark / System
+- [x] Request timeout configuration
+- [x] Follow redirects toggle
+- [x] Theme: Light / Dark / System
 
 **Keyboard Shortcuts:**
-- [ ] `Ctrl/Cmd + Enter` — Send request
-- [ ] `Ctrl/Cmd + N` — New request
-- [ ] `Ctrl/Cmd + T` — New tab
-- [ ] `Ctrl/Cmd + W` — Close tab
-- [ ] `Ctrl/Cmd + S` — Save request
+- [x] `Ctrl/Cmd + Enter` — Send request
+- [x] `Ctrl/Cmd + N` — New request
+- [x] `Ctrl/Cmd + T` — New tab
+- [x] `Ctrl/Cmd + W` — Close tab
+- [x] `Ctrl/Cmd + S` — Save request
 - [ ] `Ctrl/Cmd + E` — Switch environment
-- [ ] `Ctrl/Cmd + K` — Command palette
+- [x] `Ctrl/Cmd + K` — Command palette
 - [ ] `Ctrl/Cmd + L` — Focus URL bar
-- [ ] `Ctrl/Cmd + ,` — Settings
+- [x] `Ctrl/Cmd + ,` — Settings
 - [ ] `Ctrl/Cmd + \` — Toggle sidebar
 
-### Phase 2 — Power Features (Days 91-180)
+### Phase 2 — Power Features (Days 91-180) — IN PROGRESS
 
 **Advanced Authentication:**
-- [ ] OAuth 2.0 (Authorization Code, Client Credentials, Implicit, Password, PKCE)
+- [x] OAuth 2.0 (Authorization Code, Client Credentials, Implicit, Password, PKCE)
 - [ ] Digest Auth
 - [ ] AWS Signature v4
 - [ ] NTLM
 - [ ] JWT Bearer (built-in JWT generation)
 
 **Scripting Engine:**
-- [ ] Pre-request scripts (JavaScript/TypeScript)
-- [ ] Post-response scripts (JavaScript/TypeScript)
-- [ ] `ark` API object (request, response, env, globals, variables, test, expect, sendRequest, visualize, utils, info)
-- [ ] Built-in libraries: Chai.js, CryptoJS, Lodash, Ajv, Faker, moment
+- [x] Pre-request scripts (JavaScript/TypeScript)
+- [x] Post-response scripts (JavaScript/TypeScript)
+- [x] `ark` API object (request, response, env, globals, variables, test, expect, sendRequest, visualize, utils, info)
+- [x] Built-in libraries: Chai.js, CryptoJS, Lodash, Ajv, Faker, moment
 - [ ] Script editor with auto-complete and type hints
 
 **Testing & Assertions:**
-- [ ] Declarative assertions in YAML
-- [ ] JavaScript/TypeScript test blocks with Chai.js
-- [ ] Test results panel
-- [ ] Response time assertions
+- [x] Declarative assertions in YAML
+- [x] JavaScript/TypeScript test blocks with Chai.js
+- [x] Test results panel
+- [x] Response time assertions
 
 **Collection Runner:**
-- [ ] Run all requests in a collection/folder sequentially
-- [ ] Configurable delay between requests
-- [ ] Iteration count, data-driven testing (CSV/JSON/YAML)
-- [ ] Results summary with pass/fail breakdown
-- [ ] Export results as JSON/JUnit XML/HTML
+- [x] Run all requests in a collection/folder sequentially
+- [x] Configurable delay between requests
+- [x] Iteration count, data-driven testing (CSV/JSON/YAML)
+- [x] Results summary with pass/fail breakdown
+- [x] Export results as JSON/JUnit XML/HTML
 
 **GraphQL Support:**
-- [ ] Schema introspection, auto-complete, variables, schema explorer
+- [x] Schema introspection, auto-complete, variables, schema explorer
 
 **WebSocket Support:**
-- [ ] Connection management, send/receive, message log, auto-reconnect
+- [x] Connection management, send/receive, message log, auto-reconnect
 
 **SSE (Server-Sent Events):**
-- [ ] Connect, real-time event stream viewer, event type filtering
+- [x] Connect, real-time event stream viewer, event type filtering
 
 **Import/Export:**
-- [ ] Import from Postman, Bruno, Insomnia, OpenAPI, Hoppscotch, cURL, HAR
-- [ ] Export to ApiArk YAML, Postman, OpenAPI
+- [x] Import from Postman, Bruno, Insomnia, OpenAPI
+- [ ] Import from Hoppscotch, HAR
+- [x] Import from cURL
+- [x] Export to Postman, OpenAPI
+- [ ] Export to ApiArk YAML
 
 **CLI Tool (`apiark`):**
 - [ ] `apiark run`, `apiark import`, `apiark export`
 - [ ] Reporters: json, junit, html
 - [ ] npm package: `@apiark/cli`
 
+**Auto-Save (§29):**
+- [ ] Debounced 1s auto-save for saved requests (atomic write)
+- [ ] Unsaved-on-quit dialog for new requests
+- [ ] `Ctrl+S` forces immediate save
+- [ ] Auto-save failure banner with retry
+
+**Undo/Redo (§34):**
+- [ ] Per-tab undo/redo stack (100 depth) for request editing
+- [ ] Global collection tree undo stack (20 depth) for delete/rename/move
+- [ ] Soft delete trash UI (browse/restore from `~/.apiark/trash/`)
+- [ ] Context-aware `Ctrl+Z` (tab editor vs collection tree)
+
+**File Watching (§20):**
+- [ ] `notify` crate for watching collection directories
+- [ ] Debounced (300ms) external change detection
+- [ ] Auto-reload for unchanged tabs, conflict banner for dirty tabs
+- [ ] Git merge conflict marker detection
+
+**Onboarding (§26):**
+- [ ] Welcome screen (start from scratch / import / open folder)
+- [ ] Sample collection with example requests (httpbin.org)
+- [ ] Contextual hints (dismissible, shown once)
+- [ ] Empty states with action buttons for all panels
+
+**Error Handling & Logging (§19):**
+- [ ] `tracing` log rotation (daily, 7 days / 50MB max)
+- [ ] SQLite integrity check on startup with auto-recovery
+- [ ] Opt-in crash report banner (local JSON files)
+- [ ] In-app Console panel (bottom bar) for logs and script output
+- [ ] Categorized network errors with suggestions
+
+**Scalability (§25):**
+- [ ] Virtual scrolling for collection tree and history (TanStack Virtual)
+- [ ] Lazy loading — parse request YAML only when tab opens
+- [ ] Response body >10MB streamed to temp file with "Load full response" button
+- [ ] Background YAML parsing on Rust thread (skeleton UI during load)
+- [ ] In-memory fuzzy search index for collections
+
+**Cookie Jar Management (§37):**
+- [ ] Cookie viewer/editor UI in response panel and sidebar
+- [ ] Per-collection isolated cookie jars
+- [ ] Persistent cookie mode (opt-in per collection)
+- [ ] Per-request cookie override in YAML
+- [ ] Collection-level sendCookies/storeCookies toggles
+
 ### Phase 3 — Enterprise Features (Days 181-365)
 
+**Core Enterprise Features:**
 - [ ] gRPC support (proto loading, reflection, all call types)
 - [ ] Local mock servers (axum-based, Faker.js, latency/error simulation)
 - [ ] Local scheduled testing (cron, notifications, webhooks, charts)
@@ -302,7 +351,70 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] OpenAPI spec editor with Spectral linting
 - [ ] Plugin system (JS + WASM)
 - [ ] MQTT, Socket.IO support
-- [ ] Response diff, proxy capture, performance profiling
+- [ ] Response diff
+- [ ] Performance profiling
+
+**Proxy Capture Mode (§38):**
+- [ ] Local intercepting HTTP/HTTPS proxy (hyper + rcgen + rustls)
+- [ ] Real-time traffic log with filtering (domain, method, status, regex)
+- [ ] Save captured request to collection / replay / edit & replay
+- [ ] Local CA certificate generation for HTTPS interception
+- [ ] Passthrough domains configuration
+
+**Security Hardening (§35):**
+- [ ] Tauri v2 capability-based permissions (main-window.json)
+- [ ] Content Security Policy (no eval, no remote scripts)
+- [ ] Secret redaction in history (`[REDACTED]` for auth tokens)
+- [ ] IPC command allowlist (no arbitrary shell/fs access)
+- [ ] `cargo audit` + `pnpm audit` in CI
+
+**Accessibility (§22):**
+- [ ] WCAG 2.1 Level AA compliance
+- [ ] Full keyboard navigation (tab order, arrow keys in tree, focus indicators)
+- [ ] Screen reader support (ARIA roles, live regions, method/status announcements)
+- [ ] `prefers-reduced-motion` and `prefers-contrast` support
+- [ ] axe-core in CI for automated a11y audits
+
+**YAML Format Versioning (§21):**
+- [ ] Migration system with chained version functions (v1→v2→v3)
+- [ ] Upgrade dialog with read-only fallback
+- [ ] Deprecated field support for 2 major versions
+- [ ] Migration code in `storage/migration.rs`
+
+**Update Mechanism (§30):**
+- [ ] Tauri v2 updater plugin with signed manifests
+- [ ] Stable / Beta / Nightly update channels
+- [ ] Non-blocking update banner (never auto-install)
+- [ ] Rollback system (keep last 3 binaries)
+- [ ] Code signing (macOS, Windows, Linux GPG)
+
+**Internationalization (§23):**
+- [ ] `react-i18next` with JSON locale files
+- [ ] All UI strings via `t('key')` (English-only initially)
+- [ ] `Intl.DateTimeFormat` / `Intl.NumberFormat` for formatting
+- [ ] CSS logical properties for future RTL support
+- [ ] Community translation via Weblate/Crowdin
+
+**Licensing & Feature Gating (§27):**
+- [ ] Signed JWT license keys (offline validation)
+- [ ] 14-day grace period after expiry
+- [ ] Pro tier: mock servers, monitors, docs gen, response diff
+- [ ] Team tier: Git UI, team env sharing, SSO/SAML, audit logs
+
+**Data Portability (§32):**
+- [ ] Schema documentation (`docs/schema.md`) with JSON Schema definitions
+- [ ] No Lock-In Pledge on website and README
+
+**Backup & State Export (§36):**
+- [ ] Export app state as .zip (settings, window state, history)
+- [ ] Import app state from .zip with merge
+- [ ] Document manual sync approaches (symlink, dotfiles repo)
+
+**Multi-Window (§31):**
+- [ ] Tauri v2 multi-window API (`Ctrl+Shift+N`)
+- [ ] Drag tab to detach into new window
+- [ ] Shared collection/environment state across windows via Tauri events
+- [ ] Window state persistence (positions, sizes, tabs per window)
 
 ### Phase 4 — AI & Ecosystem (Year 2)
 
@@ -311,6 +423,24 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] VS Code extension, JetBrains plugin
 - [ ] GitHub Action, GitLab CI template
 - [ ] Plugin marketplace, auto-updater
+
+**Deep Links (§24):**
+- [ ] `apiark://` custom URL scheme via Tauri deep-link plugin
+- [ ] OAuth callback via `apiark://oauth/callback`
+- [ ] Collection sharing links (`apiark://import?url=...`)
+- [ ] Open specific request links (`apiark://open?collection=...&request=...`)
+
+**Privacy & Legal (§28):**
+- [ ] Privacy policy at `apiark.dev/privacy`
+- [ ] Terms of service at `apiark.dev/terms`
+- [ ] SECURITY.md with responsible disclosure process
+- [ ] GDPR compliance documentation
+
+**Offline Behavior (§33):**
+- [ ] Explicit graceful degradation for OAuth (cached tokens work offline)
+- [ ] Webhook failures handled silently in scheduled testing
+- [ ] Plugin install requires network; installed plugins work offline
+- [ ] GraphQL/gRPC schema cached locally after first fetch
 
 ---
 
@@ -743,7 +873,7 @@ Exit codes: 0 = pass, 1 = failures, 2 = not found, 3 = invalid config, 4 = netwo
 
 ## 14. Development Roadmap Summary
 
-### Phase 1: MVP (Days 1-90)
+### Phase 1: MVP (Days 1-90) — COMPLETE
 - **Week 1-2:** Project setup (Tauri v2 + React + TS + Vite + Tailwind + shadcn/ui + Rust workspace + CI/CD)
 - **Week 3-4:** HTTP engine (reqwest, timing, cookies, proxy, TLS)
 - **Week 5-6:** Request builder UI (URL bar, params, headers, body, auth, send)
@@ -751,16 +881,22 @@ Exit codes: 0 = pass, 1 = failures, 2 = not found, 3 = invalid config, 4 = netwo
 - **Week 9-10:** Environments + tabs + history (YAML envs, variable interpolation, SQLite history)
 - **Week 11-12:** Polish + alpha release (command palette, shortcuts, settings, themes, code gen)
 
-### Phase 2: Power Features (Days 91-180)
-- **Month 4:** Scripting + testing (deno_core, ark API, assertions, Chai.js)
-- **Month 5:** Protocols + runner (GraphQL, WebSocket, SSE, collection runner)
-- **Month 6:** Import/export + CLI + advanced auth (OAuth 2.0, importers, `apiark` CLI)
+### Phase 2: Power Features (Days 91-180) — IN PROGRESS
+- **Month 4:** ~~Scripting + testing (rquickjs, ark API, assertions, Chai-like expect)~~ — DONE
+- **Month 5:** ~~Protocols + runner (GraphQL, WebSocket, SSE, collection runner)~~ — DONE
+- **Month 6:** ~~Import/export (Postman, Insomnia, Bruno, OpenAPI)~~ + ~~OAuth 2.0~~ — DONE
+- **Month 6 remaining:** CLI tool (`apiark`), advanced auth (Digest, AWS Sig v4, NTLM, JWT Bearer)
+- **Month 6 polish:** Auto-save (§29), undo/redo (§34), file watching (§20), onboarding (§26), error handling & logging (§19), scalability (§25), cookie jar UI (§37)
 
 ### Phase 3: Enterprise (Days 181-365)
 - gRPC, mock servers, monitoring, docs generation, OpenAPI editor, plugin system
+- Proxy capture mode (§38), security hardening (§35), accessibility (§22)
+- YAML versioning & migration (§21), update mechanism (§30), i18n (§23)
+- Licensing & feature gating (§27), backup & state export (§36), multi-window (§31), data portability docs (§32)
 
 ### Phase 4: AI & Ecosystem (Year 2)
 - AI assistant, MCP server, IDE extensions, marketplace
+- Deep links (§24), privacy & legal (§28), offline behavior hardening (§33)
 
 ---
 
