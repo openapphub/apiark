@@ -1,0 +1,122 @@
+import { useState, useEffect, useRef } from "react";
+import { previewDocs, generateDocs } from "@/lib/tauri-api";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { X, Download, FileText } from "lucide-react";
+
+interface DocsPreviewDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  collectionPath: string;
+  collectionName: string;
+}
+
+export function DocsPreviewDialog({
+  open,
+  onOpenChange,
+  collectionPath,
+  collectionName,
+}: DocsPreviewDialogProps) {
+  const [html, setHtml] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (open && collectionPath) {
+      setLoading(true);
+      setError(null);
+      previewDocs(collectionPath)
+        .then(setHtml)
+        .catch((err) => setError(String(err)))
+        .finally(() => setLoading(false));
+    }
+  }, [open, collectionPath]);
+
+  useEffect(() => {
+    if (html && iframeRef.current) {
+      const doc = iframeRef.current.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(html);
+        doc.close();
+      }
+    }
+  }, [html]);
+
+  const handleExport = async (format: "html" | "markdown") => {
+    try {
+      const ext = format === "html" ? "html" : "md";
+      const content = await generateDocs(collectionPath, format);
+      const filePath = await save({
+        defaultPath: `${collectionName}-docs.${ext}`,
+        filters: [
+          {
+            name: format === "html" ? "HTML Files" : "Markdown Files",
+            extensions: [ext],
+          },
+        ],
+      });
+      if (filePath) {
+        await writeTextFile(filePath, content);
+      }
+    } catch (err) {
+      setError(String(err));
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="flex h-[80vh] w-[800px] flex-col overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
+            <FileText className="h-4 w-4" /> API Documentation — {collectionName}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleExport("html")}
+              className="flex items-center gap-1 rounded bg-[var(--color-elevated)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]"
+            >
+              <Download className="h-3 w-3" /> HTML
+            </button>
+            <button
+              onClick={() => handleExport("markdown")}
+              className="flex items-center gap-1 rounded bg-[var(--color-elevated)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]"
+            >
+              <Download className="h-3 w-3" /> Markdown
+            </button>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden">
+          {loading ? (
+            <div className="flex h-full items-center justify-center text-sm text-[var(--color-text-muted)]">
+              Generating documentation...
+            </div>
+          ) : error ? (
+            <div className="flex h-full items-center justify-center text-sm text-red-400">
+              {error}
+            </div>
+          ) : (
+            <iframe
+              ref={iframeRef}
+              className="h-full w-full border-none"
+              sandbox="allow-same-origin"
+              title="API Documentation Preview"
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

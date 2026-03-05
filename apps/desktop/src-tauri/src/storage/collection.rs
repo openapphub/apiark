@@ -167,7 +167,8 @@ pub fn create_folder(parent: &Path, name: &str) -> Result<PathBuf, String> {
 }
 
 /// Delete an item (file or folder) by moving it to trash.
-pub fn delete_item(path: &Path, collection_name: &str) -> Result<(), String> {
+/// Moves an item to trash. Returns the trash directory path for undo support.
+pub fn delete_item(path: &Path, collection_name: &str) -> Result<String, String> {
     let trash_base = dirs::home_dir()
         .ok_or("Could not determine home directory")?
         .join(".apiark")
@@ -196,7 +197,7 @@ pub fn delete_item(path: &Path, collection_name: &str) -> Result<(), String> {
             .map_err(|e| format!("Failed to remove original file: {e}"))?;
     }
 
-    Ok(())
+    Ok(trash_dir.to_string_lossy().to_string())
 }
 
 fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), String> {

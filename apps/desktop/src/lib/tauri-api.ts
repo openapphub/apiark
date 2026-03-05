@@ -156,8 +156,8 @@ export async function createFolder(
 export async function deleteItem(
   path: string,
   collectionName: string,
-): Promise<void> {
-  return await invoke<void>("delete_item", { path, collectionName });
+): Promise<string> {
+  return await invoke<string>("delete_item", { path, collectionName });
 }
 
 export async function saveFolderOrder(
@@ -318,6 +318,137 @@ export async function exportCollection(
   format: ExportFormat,
 ): Promise<string> {
   return await invoke<string>("export_collection", { collectionPath, format });
+}
+
+// ── gRPC ──
+
+export async function grpcLoadProto(connectionId: string, protoPath: string): Promise<import("@apiark/types").GrpcServiceInfo[]> {
+  return await invoke<import("@apiark/types").GrpcServiceInfo[]>("grpc_load_proto", { connectionId, protoPath });
+}
+
+export async function grpcCallUnary(
+  connectionId: string,
+  address: string,
+  serviceName: string,
+  methodName: string,
+  requestJson: string,
+  metadata: import("@apiark/types").GrpcMetadataEntry[],
+): Promise<import("@apiark/types").GrpcResponse> {
+  try {
+    return await invoke<import("@apiark/types").GrpcResponse>("grpc_call_unary", {
+      connectionId, address, serviceName, methodName, requestJson, metadata,
+    });
+  } catch (err) {
+    handleTauriError(err);
+  }
+}
+
+export async function grpcDisconnect(address: string): Promise<void> {
+  return await invoke<void>("grpc_disconnect", { address });
+}
+
+// ── API Docs ──
+
+export async function generateDocs(
+  collectionPath: string,
+  format: import("@apiark/types").DocsFormat,
+  outputPath?: string,
+): Promise<string> {
+  return await invoke<string>("generate_docs", {
+    collectionPath,
+    format,
+    outputPath: outputPath ?? null,
+  });
+}
+
+export async function previewDocs(collectionPath: string): Promise<string> {
+  return await invoke<string>("preview_docs", { collectionPath });
+}
+
+// ── Monitors / Scheduler ──
+
+export async function createMonitor(config: import("@apiark/types").MonitorConfig): Promise<import("@apiark/types").MonitorStatus> {
+  return await invoke<import("@apiark/types").MonitorStatus>("create_monitor", { config });
+}
+
+export async function deleteMonitor(monitorId: string): Promise<void> {
+  return await invoke<void>("delete_monitor", { monitorId });
+}
+
+export async function toggleMonitor(monitorId: string): Promise<import("@apiark/types").MonitorStatus> {
+  return await invoke<import("@apiark/types").MonitorStatus>("toggle_monitor", { monitorId });
+}
+
+export async function listMonitors(): Promise<import("@apiark/types").MonitorStatus[]> {
+  return await invoke<import("@apiark/types").MonitorStatus[]>("list_monitors", {});
+}
+
+export async function getMonitorResults(monitorId: string): Promise<import("@apiark/types").MonitorResult[]> {
+  return await invoke<import("@apiark/types").MonitorResult[]>("get_monitor_results", { monitorId });
+}
+
+// ── Mock Server ──
+
+export async function startMockServer(config: import("@apiark/types").MockServerConfig): Promise<import("@apiark/types").MockServerStatus> {
+  try {
+    return await invoke<import("@apiark/types").MockServerStatus>("start_mock_server", { config });
+  } catch (err) {
+    handleTauriError(err);
+  }
+}
+
+export async function stopMockServer(serverId: string): Promise<void> {
+  return await invoke<void>("stop_mock_server", { serverId });
+}
+
+export async function listMockServers(): Promise<import("@apiark/types").MockServerStatus[]> {
+  return await invoke<import("@apiark/types").MockServerStatus[]>("list_mock_servers", {});
+}
+
+// ── Cookie Jar ──
+
+export async function getCookieJar(collectionPath: string): Promise<import("@apiark/types").CookieJarEntry[]> {
+  return await invoke<import("@apiark/types").CookieJarEntry[]>("get_cookie_jar", { collectionPath });
+}
+
+export async function deleteCookie(collectionPath: string, name: string, domain: string): Promise<void> {
+  return await invoke<void>("delete_cookie", { collectionPath, name, domain });
+}
+
+export async function clearCookieJar(collectionPath: string): Promise<void> {
+  return await invoke<void>("clear_cookie_jar", { collectionPath });
+}
+
+// ── Trash ──
+
+export interface TrashItem {
+  name: string;
+  collectionName: string;
+  trashPath: string;
+  deletedAt: string;
+  isFolder: boolean;
+}
+
+export async function listTrash(): Promise<TrashItem[]> {
+  return await invoke<TrashItem[]>("list_trash", {});
+}
+
+export async function restoreFromTrash(trashPath: string, restoreTo: string): Promise<void> {
+  return await invoke<void>("restore_from_trash", { trashPath, restoreTo });
+}
+
+export async function emptyTrash(): Promise<void> {
+  return await invoke<void>("empty_trash", {});
+}
+
+// ── File Watcher ──
+
+export async function watchCollection(collectionPath: string): Promise<void> {
+  return await invoke<void>("watch_collection", { collectionPath });
+}
+
+export async function unwatchCollection(collectionPath: string): Promise<void> {
+  return await invoke<void>("unwatch_collection", { collectionPath });
 }
 
 // ── Sample Collection ──

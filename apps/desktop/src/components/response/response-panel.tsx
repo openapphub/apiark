@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useActiveTab } from "@/stores/tab-store";
-import { AlertCircle, ClipboardCopy, Download, Check } from "lucide-react";
+import { AlertCircle, ClipboardCopy, Download, Check, ArrowLeftRight, BookmarkPlus } from "lucide-react";
+import { useDiffStore } from "@/stores/diff-store";
 import { CodeGenerationPanel } from "./code-generation-panel";
 import { TestResultsPanel } from "./test-results-panel";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -229,6 +230,8 @@ export function ResponsePanel() {
 
 function ResponseBodyActions({ body }: { body: string }) {
   const [copied, setCopied] = useState(false);
+  const tab = useActiveTab();
+  const { saveSnapshot, open: openDiff } = useDiffStore();
 
   const handleCopy = async () => {
     try {
@@ -276,6 +279,30 @@ function ResponseBodyActions({ body }: { body: string }) {
         <Download className="h-3 w-3" />
         Save
       </button>
+      {tab?.response && (
+        <>
+          <button
+            onClick={() => {
+              if (tab.response) {
+                saveSnapshot(tab.name || "Response", tab.response);
+              }
+            }}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
+            title="Save response for diff comparison"
+          >
+            <BookmarkPlus className="h-3 w-3" />
+            Save for Diff
+          </button>
+          <button
+            onClick={openDiff}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
+            title="Compare responses"
+          >
+            <ArrowLeftRight className="h-3 w-3" />
+            Compare
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -1,13 +1,18 @@
 mod commands;
+mod docs;
 mod exporter;
+mod grpc;
 mod http;
 mod importer;
+mod mock;
 mod models;
+mod scheduler;
 mod oauth;
 mod runner;
 mod scripting;
 mod sse;
 mod storage;
+mod watcher;
 mod websocket;
 
 use std::sync::{Arc, Mutex};
@@ -28,8 +33,20 @@ use commands::sse::{sse_connect, sse_disconnect, SseManager};
 use commands::websocket::{ws_connect, ws_disconnect, ws_send};
 use websocket::manager::WsManager;
 use commands::settings::{get_settings, update_settings, SettingsState};
+use commands::cookies::{get_cookie_jar, delete_cookie, clear_cookie_jar};
+use commands::grpc::{grpc_load_proto, grpc_call_unary, grpc_disconnect};
+use commands::docs::{generate_docs, preview_docs};
+use commands::mock::{start_mock_server, stop_mock_server, list_mock_servers};
+use commands::scheduler::{create_monitor, delete_monitor, toggle_monitor, list_monitors, get_monitor_results};
+use grpc::client::GrpcManager;
+use mock::server::MockServerManager;
+use scheduler::monitor::MonitorManager;
 use commands::state::{load_persisted_state, save_persisted_state};
+use commands::trash::{list_trash, restore_from_trash, empty_trash};
+use commands::watcher::{watch_collection, unwatch_collection};
 use oauth::OAuthTokenStore;
+use http::cookies::CookieJarManager;
+use watcher::collection_watcher::CollectionWatcher;
 use storage::history::HistoryDb;
 use storage::settings;
 
@@ -92,6 +109,11 @@ pub fn run() {
         .manage(WsManager::new())
         .manage(SseManager::new())
         .manage(OAuthTokenStore::new())
+        .manage(CollectionWatcher::new())
+        .manage(CookieJarManager::new())
+        .manage(GrpcManager::new())
+        .manage(MockServerManager::new())
+        .manage(MonitorManager::new())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -146,6 +168,34 @@ pub fn run() {
             // Settings commands
             get_settings,
             update_settings,
+            // Watcher commands
+            watch_collection,
+            unwatch_collection,
+            // gRPC commands
+            grpc_load_proto,
+            grpc_call_unary,
+            grpc_disconnect,
+            // Cookie Jar commands
+            get_cookie_jar,
+            delete_cookie,
+            clear_cookie_jar,
+            // Mock Server commands
+            start_mock_server,
+            stop_mock_server,
+            list_mock_servers,
+            // Docs commands
+            generate_docs,
+            preview_docs,
+            // Monitor/Scheduler commands
+            create_monitor,
+            delete_monitor,
+            toggle_monitor,
+            list_monitors,
+            get_monitor_results,
+            // Trash commands
+            list_trash,
+            restore_from_trash,
+            empty_trash,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

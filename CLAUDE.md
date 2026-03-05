@@ -303,15 +303,15 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Auto-save failure banner with retry
 
 **Undo/Redo (§34):**
-- [ ] Per-tab undo/redo stack (100 depth) for request editing
-- [ ] Global collection tree undo stack (20 depth) for delete/rename/move
-- [ ] Soft delete trash UI (browse/restore from `~/.apiark/trash/`)
-- [ ] Context-aware `Ctrl+Z` (tab editor vs collection tree)
+- [x] Per-tab undo/redo stack (100 depth) for request editing
+- [x] Global collection tree undo stack (20 depth) for delete/rename/move
+- [x] Soft delete trash UI (browse/restore from `~/.apiark/trash/`)
+- [x] Context-aware `Ctrl+Z` (tab editor vs collection tree)
 
 **File Watching (§20):**
-- [ ] `notify` crate for watching collection directories
-- [ ] Debounced (300ms) external change detection
-- [ ] Auto-reload for unchanged tabs, conflict banner for dirty tabs
+- [x] `notify` crate for watching collection directories
+- [x] Debounced (300ms) external change detection
+- [x] Auto-reload for unchanged tabs, conflict banner for dirty tabs
 - [ ] Git merge conflict marker detection
 
 **Onboarding (§26):**
@@ -335,23 +335,23 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] In-memory fuzzy search index for collections
 
 **Cookie Jar Management (§37):**
-- [ ] Cookie viewer/editor UI in response panel and sidebar
-- [ ] Per-collection isolated cookie jars
-- [ ] Persistent cookie mode (opt-in per collection)
+- [x] Cookie viewer/editor UI in response panel and sidebar
+- [x] Per-collection isolated cookie jars
+- [x] Persistent cookie mode (opt-in per collection)
 - [ ] Per-request cookie override in YAML
 - [ ] Collection-level sendCookies/storeCookies toggles
 
 ### Phase 3 — Enterprise Features (Days 181-365)
 
 **Core Enterprise Features:**
-- [ ] gRPC support (proto loading, reflection, all call types)
-- [ ] Local mock servers (axum-based, Faker.js, latency/error simulation)
-- [ ] Local scheduled testing (cron, notifications, webhooks, charts)
-- [ ] API documentation generation (HTML + Markdown export)
+- [x] gRPC support (proto loading, reflection, all call types)
+- [x] Local mock servers (axum-based, Faker.js, latency/error simulation)
+- [x] Local scheduled testing (cron, notifications, webhooks, charts)
+- [x] API documentation generation (HTML + Markdown export)
 - [ ] OpenAPI spec editor with Spectral linting
 - [ ] Plugin system (JS + WASM)
 - [ ] MQTT, Socket.IO support
-- [ ] Response diff
+- [x] Response diff
 - [ ] Performance profiling
 
 **Proxy Capture Mode (§38):**
@@ -362,10 +362,10 @@ No tool currently delivers ALL of these simultaneously:
 - [ ] Passthrough domains configuration
 
 **Security Hardening (§35):**
-- [ ] Tauri v2 capability-based permissions (main-window.json)
-- [ ] Content Security Policy (no eval, no remote scripts)
-- [ ] Secret redaction in history (`[REDACTED]` for auth tokens)
-- [ ] IPC command allowlist (no arbitrary shell/fs access)
+- [x] Tauri v2 capability-based permissions (main-window.json)
+- [x] Content Security Policy (no eval, no remote scripts)
+- [x] Secret redaction in history (`[REDACTED]` for auth tokens)
+- [x] IPC command allowlist (no arbitrary shell/fs access)
 - [ ] `cargo audit` + `pnpm audit` in CI
 
 **Accessibility (§22):**

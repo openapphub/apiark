@@ -8,6 +8,7 @@ import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { CurlImportDialog } from "@/components/request/curl-import-dialog";
 import { CommandPalette } from "@/components/command-palette/command-palette";
 import { GraphQLView } from "@/components/graphql/graphql-view";
+import { GrpcView } from "@/components/grpc/grpc-view";
 import { WebSocketView } from "@/components/websocket/websocket-view";
 import { SSEView } from "@/components/sse/sse-view";
 import { CollectionRunnerDialog } from "@/components/runner/collection-runner-dialog";
@@ -18,12 +19,18 @@ import { useHistoryStore } from "@/stores/history-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useTheme } from "@/hooks/use-theme";
 import { useAutoSave } from "@/hooks/use-auto-save";
+import { useFileWatcher } from "@/hooks/use-file-watcher";
+import { ResponseDiffDialog } from "@/components/response/response-diff-dialog";
+import { MockServerDialog } from "@/components/mock/mock-server-dialog";
+import { MonitorDialog } from "@/components/scheduler/monitor-dialog";
+import { DocsPreviewDialog } from "@/components/docs/docs-preview-dialog";
+import { useDocsStore } from "@/stores/docs-store";
 import { WelcomeScreen } from "@/components/onboarding/welcome-screen";
 import { GuidedTour } from "@/components/onboarding/guided-tour";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, X, RefreshCw, FileX } from "lucide-react";
 
 function App() {
-  const { newTab, closeTab, save, send, persistTabs, restoreTabs } = useTabStore();
+  const { newTab, closeTab, save, send, persistTabs, restoreTabs, undoTab, redoTab } = useTabStore();
   const activeTab = useActiveTab();
   const tabs = useTabStore((s) => s.tabs);
   const activeTabId = useTabStore((s) => s.activeTabId);
@@ -42,6 +49,7 @@ function App() {
   const envSelectorRef = useRef<HTMLSelectElement>(null);
 
   useTheme();
+  useFileWatcher();
   const { autoSaveError } = useAutoSave();
 
   // Load settings and restore tabs on mount
@@ -126,12 +134,24 @@ function App() {
           e.preventDefault();
           send();
           break;
+        case "z":
+          e.preventDefault();
+          if (e.shiftKey) {
+            redoTab();
+          } else {
+            undoTab();
+          }
+          break;
+        case "y":
+          e.preventDefault();
+          redoTab();
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [newTab, closeTab, save, send, activeTab]);
+  }, [newTab, closeTab, save, send, undoTab, redoTab, activeTab]);
 
   // Refresh history when a request completes
   useEffect(() => {
@@ -177,6 +197,11 @@ function App() {
         </div>
       )}
 
+      {/* File conflict banner */}
+      {activeTab?.conflictState && (
+        <ConflictBanner tabId={activeTab.id} conflictState={activeTab.conflictState} />
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <CollectionSidebar
@@ -210,8 +235,24 @@ function App() {
       />
       <CollectionRunnerDialog open={runnerOpen} onOpenChange={setRunnerOpen} />
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <ResponseDiffDialog />
+      <MockServerDialog />
+      <MonitorDialog />
+      <DocsDialogWrapper />
       {showTour && <GuidedTour onComplete={() => setShowTour(false)} />}
     </div>
+  );
+}
+
+function DocsDialogWrapper() {
+  const { open, collectionPath, collectionName, closeDocs } = useDocsStore();
+  return (
+    <DocsPreviewDialog
+      open={open}
+      onOpenChange={(v) => { if (!v) closeDocs(); }}
+      collectionPath={collectionPath}
+      collectionName={collectionName}
+    />
   );
 }
 
@@ -225,6 +266,8 @@ function ProtocolView({
   switch (protocol) {
     case "graphql":
       return <GraphQLView />;
+    case "grpc":
+      return <GrpcView />;
     case "websocket":
       return <WebSocketView />;
     case "sse":
@@ -262,6 +305,56 @@ function EmptyState() {
         className="rounded bg-[var(--color-elevated)] px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
       >
         New Request
+      </button>
+    </div>
+  );
+}
+
+function ConflictBanner({ tabId, conflictState }: { tabId: string; conflictState: "external-change" | "deleted" }) {
+  const { reloadFromDisk, dismissConflict, closeTab } = useTabStore();
+
+  if (conflictState === "deleted") {
+    return (
+      <div className="flex items-center gap-2 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-400">
+        <FileX className="h-4 w-4 shrink-0" />
+        <span className="flex-1">This file was deleted externally.</span>
+        <button
+          onClick={() => closeTab(tabId)}
+          className="rounded bg-yellow-500/20 px-2 py-0.5 text-xs hover:bg-yellow-500/30"
+        >
+          Close
+        </button>
+        <button
+          onClick={() => dismissConflict(tabId)}
+          className="rounded p-0.5 hover:bg-yellow-500/20"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+      <RefreshCw className="h-4 w-4 shrink-0" />
+      <span className="flex-1">This file was changed externally.</span>
+      <button
+        onClick={() => reloadFromDisk(tabId)}
+        className="rounded bg-blue-500/20 px-2 py-0.5 text-xs hover:bg-blue-500/30"
+      >
+        Reload
+      </button>
+      <button
+        onClick={() => dismissConflict(tabId)}
+        className="rounded bg-blue-500/20 px-2 py-0.5 text-xs hover:bg-blue-500/30"
+      >
+        Keep Mine
+      </button>
+      <button
+        onClick={() => dismissConflict(tabId)}
+        className="rounded p-0.5 hover:bg-blue-500/20"
+      >
+        <X className="h-3.5 w-3.5" />
       </button>
     </div>
   );

@@ -18,6 +18,10 @@ import { useTabStore } from "@/stores/tab-store";
 import { useCollectionStore } from "@/stores/collection-store";
 import { useEnvironmentStore } from "@/stores/environment-store";
 import { useSettingsStore } from "@/stores/settings-store";
+import { useDiffStore } from "@/stores/diff-store";
+import { useMockStore } from "@/stores/mock-store";
+import { useMonitorStore } from "@/stores/monitor-store";
+import { useDocsStore } from "@/stores/docs-store";
 import { exportCollectionToFile } from "@/lib/export-collection";
 import type { CollectionNode, ExportFormat } from "@apiark/types";
 
@@ -51,7 +55,7 @@ export function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const { tabs, newTab, newGraphQLTab, newWebSocketTab, newSSETab, setActiveTab } = useTabStore();
+  const { tabs, newTab, newGraphQLTab, newWebSocketTab, newSSETab, newGrpcTab, setActiveTab } = useTabStore();
   const { collections } = useCollectionStore();
   const { environments, setActiveEnvironment } = useEnvironmentStore();
   const { settings, updateSettings } = useSettingsStore();
@@ -91,6 +95,13 @@ export function CommandPalette({
       action: () => { newSSETab(); onOpenChange(false); },
     });
     cmds.push({
+      id: "new-grpc",
+      label: "New gRPC Request",
+      category: "General",
+      icon: Zap,
+      action: () => { newGrpcTab(); onOpenChange(false); },
+    });
+    cmds.push({
       id: "open-settings",
       label: "Settings",
       category: "General",
@@ -123,6 +134,44 @@ export function CommandPalette({
         onOpenChange(false);
       },
     });
+
+    cmds.push({
+      id: "compare-responses",
+      label: "Compare Responses",
+      category: "General",
+      icon: Download,
+      action: () => { useDiffStore.getState().open(); onOpenChange(false); },
+    });
+
+    cmds.push({
+      id: "mock-server",
+      label: "Mock Servers",
+      category: "General",
+      icon: Radio,
+      action: () => { useMockStore.getState().openDialog(); onOpenChange(false); },
+    });
+
+    cmds.push({
+      id: "monitors",
+      label: "Scheduled Monitors",
+      category: "General",
+      icon: Play,
+      action: () => { useMonitorStore.getState().openDialog(); onOpenChange(false); },
+    });
+
+    if (collections.length > 0) {
+      cmds.push({
+        id: "generate-docs",
+        label: "Generate API Docs",
+        category: "General",
+        icon: Globe,
+        action: () => {
+          const col = collections[0];
+          useDocsStore.getState().openDocs(col.path, col.name);
+          onOpenChange(false);
+        },
+      });
+    }
 
     if (onOpenRunner) {
       cmds.push({

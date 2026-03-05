@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { CollectionNode, HttpMethod } from "@apiark/types";
 import { useCollectionStore } from "@/stores/collection-store";
 import { useTabStore } from "@/stores/tab-store";
+import { useMockStore } from "@/stores/mock-store";
+import { useDocsStore } from "@/stores/docs-store";
 import {
   ChevronRight,
   ChevronDown,
@@ -12,6 +14,8 @@ import {
   Trash2,
   Pencil,
   Download,
+  Radio,
+  FileText,
   GripVertical,
 } from "lucide-react";
 import { exportCollectionToFile } from "@/lib/export-collection";
@@ -410,6 +414,22 @@ function TreeNode({
                     onClick: () => {
                       closeContextMenu();
                       exportCollectionToFile(node.path, node.name, "openapi").catch(console.error);
+                    },
+                  },
+                  {
+                    label: "Start Mock Server",
+                    icon: Radio,
+                    onClick: () => {
+                      closeContextMenu();
+                      useMockStore.getState().openDialog();
+                    },
+                  },
+                  {
+                    label: "Generate Docs",
+                    icon: FileText,
+                    onClick: () => {
+                      closeContextMenu();
+                      useDocsStore.getState().openDocs(node.path, node.name);
                     },
                   },
                 ]

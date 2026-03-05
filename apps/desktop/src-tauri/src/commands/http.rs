@@ -336,7 +336,7 @@ fn record_history(
     let history_db = Arc::clone(&state.history_db);
     let method_str = format!("{:?}", interpolated.method);
     let url_str = interpolated.url.clone();
-    let request_json = serde_json::to_string(original_params).unwrap_or_default();
+    let request_json = redact_secrets(&serde_json::to_string(original_params).unwrap_or_default());
 
     match result {
         Ok(response) => {
@@ -474,5 +474,45 @@ fn resolve_oauth_token(
         }
     } else {
         Ok(())
+    }
+}
+
+/// Redact sensitive values from the serialized request JSON before storing in history.
+/// Replaces auth tokens, passwords, and secret-like header values with [REDACTED].
+fn redact_secrets(json: &str) -> String {
+    let sensitive_keys = [
+        "token", "password", "secret", "accessToken", "refreshToken",
+        "secretKey", "accessKey", "sessionToken", "apiKey",
+        "clientSecret", "authorizationUrl", "tokenUrl",
+    ];
+
+    let Ok(mut value) = serde_json::from_str::<serde_json::Value>(json) else {
+        return json.to_string();
+    };
+
+    redact_value(&mut value, &sensitive_keys);
+    serde_json::to_string(&value).unwrap_or_else(|_| json.to_string())
+}
+
+fn redact_value(value: &mut serde_json::Value, keys: &[&str]) {
+    match value {
+        serde_json::Value::Object(map) => {
+            for (k, v) in map.iter_mut() {
+                let k_lower = k.to_lowercase();
+                if keys.iter().any(|s| k_lower.contains(&s.to_lowercase())) {
+                    if v.is_string() {
+                        *v = serde_json::Value::String("[REDACTED]".to_string());
+                    }
+                } else {
+                    redact_value(v, keys);
+                }
+            }
+        }
+        serde_json::Value::Array(arr) => {
+            for item in arr.iter_mut() {
+                redact_value(item, keys);
+            }
+        }
+        _ => {}
     }
 }

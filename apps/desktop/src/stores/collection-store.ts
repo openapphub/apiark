@@ -6,7 +6,11 @@ import {
   createFolder as createFolderApi,
   deleteItem as deleteItemApi,
   renameItem as renameItemApi,
+  watchCollection,
+  unwatchCollection,
+  restoreFromTrash,
 } from "@/lib/tauri-api";
+import { useUndoStore } from "./undo-store";
 
 interface CollectionState {
   collections: CollectionNode[];
@@ -33,6 +37,7 @@ interface CollectionState {
     newName: string,
     collectionPath: string,
   ) => Promise<string>;
+  undoLastAction: () => Promise<void>;
 }
 
 export const useCollectionStore = create<CollectionState>((set, get) => ({
@@ -52,6 +57,10 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
         collections: [...state.collections, tree],
         expandedPaths: new Set([...state.expandedPaths, path]),
       }));
+      // Start watching for external file changes
+      watchCollection(path).catch((err) =>
+        console.warn("Failed to start file watcher:", err),
+      );
     } catch (err) {
       console.error("Failed to open collection:", err);
       throw err;
@@ -59,6 +68,7 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   closeCollection: (path) => {
+    unwatchCollection(path).catch(() => {});
     set((state) => ({
       collections: state.collections.filter(
         (c) => !(c.type === "collection" && c.path === path),
@@ -110,13 +120,54 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   deleteItem: async (path, collectionName, collectionPath) => {
-    await deleteItemApi(path, collectionName);
+    const trashPath = await deleteItemApi(path, collectionName);
+    useUndoStore.getState().pushUndo({
+      type: "delete",
+      path,
+      collectionPath,
+      collectionName,
+      trashPath,
+    });
     await get().refreshCollection(collectionPath);
   },
 
   renameItem: async (path, newName, collectionPath) => {
+    const oldName = path.split("/").pop()?.replace(".yaml", "") ?? "";
     const newPath = await renameItemApi(path, newName);
+    useUndoStore.getState().pushUndo({
+      type: "rename",
+      oldPath: path,
+      newPath,
+      oldName,
+      newName,
+      collectionPath,
+    });
     await get().refreshCollection(collectionPath);
     return newPath;
+  },
+
+  undoLastAction: async () => {
+    const action = useUndoStore.getState().popUndo();
+    if (!action) return;
+
+    switch (action.type) {
+      case "delete": {
+        // Restore from trash to original parent directory
+        const parentDir = action.path.substring(0, action.path.lastIndexOf("/"));
+        await restoreFromTrash(action.trashPath, parentDir);
+        await get().refreshCollection(action.collectionPath);
+        break;
+      }
+      case "rename": {
+        // Rename back to old name
+        await renameItemApi(action.newPath, action.oldName);
+        await get().refreshCollection(action.collectionPath);
+        break;
+      }
+      case "move": {
+        // Move is not yet implemented, placeholder
+        break;
+      }
+    }
   },
 }));

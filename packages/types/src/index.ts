@@ -262,7 +262,7 @@ export interface AppSettings {
 
 // ── Tab Protocol ──
 
-export type TabProtocol = "http" | "graphql" | "websocket" | "sse";
+export type TabProtocol = "http" | "graphql" | "websocket" | "sse" | "grpc";
 
 export interface GraphQLState {
   query: string;
@@ -380,6 +380,139 @@ export interface ImportWarning {
 export type ImportFormat = "postman" | "insomnia" | "bruno" | "openapi";
 export type ExportFormat = "postman" | "openapi";
 
+// ── gRPC ──
+
+export interface GrpcServiceInfo {
+  name: string;
+  fullName: string;
+  methods: GrpcMethodInfo[];
+}
+
+export interface GrpcMethodInfo {
+  name: string;
+  fullName: string;
+  inputType: string;
+  outputType: string;
+  callType: "unary" | "serverStreaming" | "clientStreaming" | "bidiStreaming";
+}
+
+export interface GrpcResponse {
+  statusCode: number;
+  statusMessage: string;
+  body: string;
+  timeMs: number;
+  metadata: GrpcMetadataEntry[];
+}
+
+export interface GrpcMetadataEntry {
+  key: string;
+  value: string;
+}
+
+export interface GrpcState {
+  services: GrpcServiceInfo[];
+  selectedService: string | null;
+  selectedMethod: string | null;
+  requestJson: string;
+  metadata: KeyValuePair[];
+  response: GrpcResponse | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ── API Docs ──
+
+export type DocsFormat = "html" | "markdown";
+
+// ── Monitor / Scheduler ──
+
+export interface MonitorConfig {
+  name: string;
+  collectionPath: string;
+  folderPath?: string;
+  environmentName?: string;
+  cronExpression: string;
+  notifyOnFailure: boolean;
+  webhookUrl?: string;
+}
+
+export interface MonitorStatus {
+  id: string;
+  name: string;
+  collectionPath: string;
+  cronExpression: string;
+  enabled: boolean;
+  lastRun?: string;
+  lastStatus?: string;
+  runCount: number;
+}
+
+export interface MonitorResult {
+  id: number;
+  monitorId: string;
+  timestamp: string;
+  totalRequests: number;
+  totalPassed: number;
+  totalFailed: number;
+  totalTimeMs: number;
+  status: string;
+  error?: string;
+}
+
+// ── Mock Server ──
+
+export interface MockServerConfig {
+  collectionPath: string;
+  port: number;
+  latencyMs: number;
+  errorRate: number;
+}
+
+export interface MockEndpoint {
+  method: string;
+  path: string;
+  status: number;
+  body: string;
+  contentType: string;
+}
+
+export interface MockServerStatus {
+  id: string;
+  collectionName: string;
+  port: number;
+  endpoints: MockEndpoint[];
+  running: boolean;
+}
+
+export interface MockRequestLog {
+  method: string;
+  path: string;
+  status: number;
+  timeMs: number;
+  timestamp: string;
+}
+
+// ── Cookie Jar ──
+
+export interface CookieJarEntry {
+  name: string;
+  value: string;
+  domain: string;
+  path: string;
+  expires?: string;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite?: string;
+}
+
+// ── File Watcher ──
+
+export interface FileChangeEvent {
+  path: string;
+  changeType: "created" | "modified" | "deleted" | "renamed";
+  collectionPath: string;
+}
+
 // ── Persisted State ──
 
 export interface PersistedTab {
@@ -405,6 +538,9 @@ export interface Tab {
   // GraphQL state (when protocol === "graphql")
   graphql: GraphQLState | null;
 
+  // gRPC state (when protocol === "grpc")
+  grpc: GrpcState | null;
+
   // Request state
   method: HttpMethod;
   url: string;
@@ -428,4 +564,25 @@ export interface Tab {
   testResults: TestResult[];
   assertionResults: AssertionResult[];
   consoleOutput: ConsoleEntry[];
+
+  // File watcher conflict state
+  conflictState: "external-change" | "deleted" | null;
+
+  // Undo/redo stacks (internal, not persisted)
+  undoStack: TabSnapshot[];
+  redoStack: TabSnapshot[];
+}
+
+/** Subset of Tab fields that we snapshot for undo/redo */
+export interface TabSnapshot {
+  method: HttpMethod;
+  url: string;
+  headers: KeyValuePair[];
+  params: KeyValuePair[];
+  body: RequestBody;
+  auth: AuthConfig;
+  preRequestScript: string | null;
+  postResponseScript: string | null;
+  testScript: string | null;
+  assertions: string | null;
 }

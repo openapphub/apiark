@@ -6,6 +6,7 @@ import type {
   AuthConfig,
   HttpError,
   Tab,
+  TabSnapshot,
   RequestFile,
   GraphQLState,
 } from "@apiark/types";
@@ -38,6 +39,7 @@ interface TabState {
   newGraphQLTab: () => void;
   newWebSocketTab: () => void;
   newSSETab: () => void;
+  newGrpcTab: () => void;
 
   // GraphQL mutations
   setGraphQLQuery: (query: string) => void;
@@ -65,6 +67,15 @@ interface TabState {
   clearResponse: () => void;
   hasUnsavedNewTabs: () => boolean;
 
+  // Undo/Redo
+  undoTab: () => void;
+  redoTab: () => void;
+
+  // Conflict resolution
+  handleExternalChange: (filePath: string, changeType: "modified" | "deleted") => void;
+  reloadFromDisk: (tabId: string) => Promise<void>;
+  dismissConflict: (tabId: string) => void;
+
   // Persistence
   persistTabs: () => void;
   restoreTabs: () => Promise<void>;
@@ -86,6 +97,7 @@ function createEmptyTab(overrides?: Partial<Tab>): Tab {
     isDirty: false,
     protocol: "http",
     graphql: null,
+    grpc: null,
     method: "GET",
     url: "",
     headers: [emptyKvRow()],
@@ -102,7 +114,27 @@ function createEmptyTab(overrides?: Partial<Tab>): Tab {
     testResults: [],
     assertionResults: [],
     consoleOutput: [],
+    conflictState: null,
+    undoStack: [],
+    redoStack: [],
     ...overrides,
+  };
+}
+
+const MAX_UNDO_DEPTH = 100;
+
+function takeSnapshot(tab: Tab): TabSnapshot {
+  return {
+    method: tab.method,
+    url: tab.url,
+    headers: JSON.parse(JSON.stringify(tab.headers)),
+    params: JSON.parse(JSON.stringify(tab.params)),
+    body: JSON.parse(JSON.stringify(tab.body)),
+    auth: JSON.parse(JSON.stringify(tab.auth)),
+    preRequestScript: tab.preRequestScript,
+    postResponseScript: tab.postResponseScript,
+    testScript: tab.testScript,
+    assertions: tab.assertions,
   };
 }
 
@@ -183,6 +215,7 @@ function requestFileToTab(
     isDirty: false,
     protocol: isGraphQL ? "graphql" : "http",
     graphql: graphqlState,
+    grpc: null,
     method: file.method,
     url: file.url,
     headers,
@@ -199,6 +232,9 @@ function requestFileToTab(
     testResults: [],
     assertionResults: [],
     consoleOutput: [],
+    conflictState: null,
+    undoStack: [],
+    redoStack: [],
   };
 }
 
@@ -241,11 +277,18 @@ function updateActiveTab(
 ): Partial<TabState> {
   if (!state.activeTabId) return {};
   return {
-    tabs: state.tabs.map((t) =>
-      t.id === state.activeTabId
-        ? { ...t, ...updater(t), isDirty: true }
-        : t,
-    ),
+    tabs: state.tabs.map((t) => {
+      if (t.id !== state.activeTabId) return t;
+      const snapshot = takeSnapshot(t);
+      const changes = updater(t);
+      return {
+        ...t,
+        ...changes,
+        isDirty: true,
+        undoStack: [...t.undoStack.slice(-MAX_UNDO_DEPTH + 1), snapshot],
+        redoStack: [], // Clear redo on new change
+      };
+    }),
   };
 }
 
@@ -287,6 +330,25 @@ export const useTabStore = create<TabState>((set, get) => ({
       name: "Untitled SSE",
       protocol: "sse",
       method: "GET",
+    });
+    set((state) => ({ tabs: [...state.tabs, tab], activeTabId: tab.id }));
+  },
+
+  newGrpcTab: () => {
+    const tab = createEmptyTab({
+      name: "Untitled gRPC",
+      protocol: "grpc",
+      url: "http://localhost:50051",
+      grpc: {
+        services: [],
+        selectedService: null,
+        selectedMethod: null,
+        requestJson: "{}",
+        metadata: [{ key: "", value: "", enabled: true }],
+        response: null,
+        loading: false,
+        error: null,
+      },
     });
     set((state) => ({ tabs: [...state.tabs, tab], activeTabId: tab.id }));
   },
@@ -550,11 +612,97 @@ export const useTabStore = create<TabState>((set, get) => ({
     set((state) => updateActiveTab(state, () => ({ response: null, error: null })));
   },
 
+  undoTab: () => {
+    set((state) => {
+      if (!state.activeTabId) return {};
+      return {
+        tabs: state.tabs.map((t) => {
+          if (t.id !== state.activeTabId || t.undoStack.length === 0) return t;
+          const snapshot = t.undoStack[t.undoStack.length - 1];
+          const currentSnapshot = takeSnapshot(t);
+          return {
+            ...t,
+            ...snapshot,
+            undoStack: t.undoStack.slice(0, -1),
+            redoStack: [...t.redoStack, currentSnapshot],
+          };
+        }),
+      };
+    });
+  },
+
+  redoTab: () => {
+    set((state) => {
+      if (!state.activeTabId) return {};
+      return {
+        tabs: state.tabs.map((t) => {
+          if (t.id !== state.activeTabId || t.redoStack.length === 0) return t;
+          const snapshot = t.redoStack[t.redoStack.length - 1];
+          const currentSnapshot = takeSnapshot(t);
+          return {
+            ...t,
+            ...snapshot,
+            redoStack: t.redoStack.slice(0, -1),
+            undoStack: [...t.undoStack, currentSnapshot],
+          };
+        }),
+      };
+    });
+  },
+
+  handleExternalChange: (filePath, changeType) => {
+    set((state) => ({
+      tabs: state.tabs.map((t) => {
+        if (t.filePath !== filePath) return t;
+        if (changeType === "deleted") {
+          return { ...t, conflictState: "deleted" as const };
+        }
+        // Modified externally — if tab is dirty, show conflict; if clean, auto-reload
+        if (t.isDirty) {
+          return { ...t, conflictState: "external-change" as const };
+        }
+        // Clean tab: auto-reload will be handled by the caller
+        return t;
+      }),
+    }));
+  },
+
+  reloadFromDisk: async (tabId) => {
+    const tab = get().tabs.find((t) => t.id === tabId);
+    if (!tab || !tab.filePath || !tab.collectionPath) return;
+    try {
+      const file = await readRequestFile(tab.filePath);
+      const reloaded = requestFileToTab(file, tab.filePath, tab.collectionPath);
+      set((state) => ({
+        tabs: state.tabs.map((t) =>
+          t.id === tabId
+            ? { ...reloaded, id: t.id, conflictState: null }
+            : t,
+        ),
+      }));
+    } catch {
+      // File may no longer exist
+      set((state) => ({
+        tabs: state.tabs.map((t) =>
+          t.id === tabId ? { ...t, conflictState: "deleted" as const } : t,
+        ),
+      }));
+    }
+  },
+
+  dismissConflict: (tabId) => {
+    set((state) => ({
+      tabs: state.tabs.map((t) =>
+        t.id === tabId ? { ...t, conflictState: null } : t,
+      ),
+    }));
+  },
+
   persistTabs: () => {
     const { tabs, activeTabId } = get();
     // Only persist file-backed tabs (exclude ephemeral WS/SSE tabs)
     const persistedTabs = tabs
-      .filter((t) => t.filePath && t.collectionPath && t.protocol !== "websocket" && t.protocol !== "sse")
+      .filter((t) => t.filePath && t.collectionPath && t.protocol !== "websocket" && t.protocol !== "sse" && t.protocol !== "grpc")
       .map((t) => ({ filePath: t.filePath!, collectionPath: t.collectionPath! }));
     const activeIndex = tabs.findIndex((t) => t.id === activeTabId);
     savePersistedState({

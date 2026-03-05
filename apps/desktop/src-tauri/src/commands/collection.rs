@@ -60,7 +60,7 @@ pub async fn create_folder(parent: String, name: String) -> Result<String, Strin
 }
 
 #[tauri::command]
-pub async fn delete_item(path: String, collection_name: String) -> Result<(), String> {
+pub async fn delete_item(path: String, collection_name: String) -> Result<String, String> {
     let item_path = Path::new(&path);
     tracing::info!(path = %path, "Deleting item (moving to trash)");
     collection::delete_item(item_path, &collection_name)

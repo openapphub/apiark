@@ -47,6 +47,12 @@ function TabBadge({ tab }: { tab: Tab }) {
           SSE
         </span>
       );
+    case "grpc":
+      return (
+        <span className="rounded bg-green-500/20 px-1.5 py-0.5 text-[10px] font-bold text-green-400">
+          gRPC
+        </span>
+      );
     default:
       return (
         <span className={`text-[10px] font-bold ${METHOD_COLORS[tab.method]}`}>
@@ -117,7 +123,7 @@ function SortableTab({
 function NewTabDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { newTab, newGraphQLTab, newWebSocketTab, newSSETab } = useTabStore();
+  const { newTab, newGraphQLTab, newWebSocketTab, newSSETab, newGrpcTab } = useTabStore();
 
   useEffect(() => {
     if (!open) return;
@@ -135,6 +141,7 @@ function NewTabDropdown() {
     { label: "GraphQL", icon: Globe, action: newGraphQLTab, color: "text-purple-400" },
     { label: "WebSocket", icon: Zap, action: newWebSocketTab, color: "text-cyan-400" },
     { label: "SSE", icon: Radio, action: newSSETab, color: "text-orange-400" },
+    { label: "gRPC", icon: Globe, action: newGrpcTab, color: "text-green-400" },
   ];
 
   return (
