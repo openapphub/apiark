@@ -3,7 +3,7 @@ import { useCollectionStore } from "@/stores/collection-store";
 import { CollectionTree } from "./collection-tree";
 import { EnvironmentSelector } from "@/components/environment/environment-selector";
 import { HistoryPanel } from "@/components/history/history-panel";
-import { FolderOpen, ChevronDown, ChevronRight, Settings } from "lucide-react";
+import { FolderOpen, ChevronDown, ChevronRight, Settings, Search, X } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useSettingsStore } from "@/stores/settings-store";
 
@@ -11,14 +11,19 @@ type SidebarSection = "collections" | "environments" | "history";
 
 interface CollectionSidebarProps {
   onOpenSettings?: () => void;
+  collapsed?: boolean;
+  envSelectorRef?: React.RefObject<HTMLSelectElement | null>;
 }
 
-export function CollectionSidebar({ onOpenSettings }: CollectionSidebarProps) {
+export function CollectionSidebar({ onOpenSettings, collapsed, envSelectorRef }: CollectionSidebarProps) {
   const sidebarWidth = useSettingsStore((s) => s.settings.sidebarWidth);
   const { collections, openCollection } = useCollectionStore();
   const [expandedSections, setExpandedSections] = useState<Set<SidebarSection>>(
     new Set(["collections", "environments"]),
   );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  if (collapsed) return null;
 
   const toggleSection = (section: SidebarSection) => {
     setExpandedSections((prev) => {
@@ -80,6 +85,28 @@ export function CollectionSidebar({ onOpenSettings }: CollectionSidebarProps) {
 
           {expandedSections.has("collections") && (
             <div className="px-1 pb-2">
+              {/* Search input */}
+              {collections.length > 0 && (
+                <div className="relative mb-1 px-2">
+                  <Search className="absolute left-4 top-1/2 h-3 w-3 -translate-y-1/2 text-[var(--color-text-dimmed)]" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search requests..."
+                    className="w-full rounded bg-[var(--color-elevated)] py-1 pl-7 pr-6 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-dimmed)] hover:text-[var(--color-text-secondary)]"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              )}
+
               {collections.length === 0 ? (
                 <div className="px-3 py-4 text-center">
                   <p className="mb-3 text-xs text-[var(--color-text-dimmed)]">
@@ -105,6 +132,7 @@ export function CollectionSidebar({ onOpenSettings }: CollectionSidebarProps) {
                       }
                       collectionPath={collection.path}
                       collectionName={collection.name}
+                      searchQuery={searchQuery}
                     />
                   ))}
                   <button
@@ -135,7 +163,7 @@ export function CollectionSidebar({ onOpenSettings }: CollectionSidebarProps) {
           </button>
           {expandedSections.has("environments") && (
             <div className="px-3 pb-2">
-              <EnvironmentSelector />
+              <EnvironmentSelector ref={envSelectorRef} />
             </div>
           )}
         </div>

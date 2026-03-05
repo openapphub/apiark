@@ -2,6 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import type { HttpMethod, Tab } from "@apiark/types";
 import { useTabStore } from "@/stores/tab-store";
 import { Plus, X, Globe, Zap, Radio, ChevronDown } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const METHOD_COLORS: Record<HttpMethod, string> = {
   GET: "text-green-500",
@@ -40,6 +54,64 @@ function TabBadge({ tab }: { tab: Tab }) {
         </span>
       );
   }
+}
+
+function SortableTab({
+  tab,
+  isActive,
+  onActivate,
+  onClose,
+}: {
+  tab: Tab;
+  isActive: boolean;
+  onActivate: () => void;
+  onClose: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={onActivate}
+      className={`group flex shrink-0 items-center gap-1.5 border-r border-[var(--color-border)] px-3 py-1.5 text-sm transition-colors ${
+        isActive
+          ? "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+          : "bg-[var(--color-bg)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-secondary)]"
+      }`}
+    >
+      <TabBadge tab={tab} />
+      <span className="max-w-[120px] truncate">{tab.name}</span>
+      {tab.isDirty && (
+        <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-muted)]" />
+      )}
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        className="ml-1 rounded p-0.5 opacity-0 hover:bg-[var(--color-border)] group-hover:opacity-100"
+      >
+        <X className="h-3 w-3" />
+      </span>
+    </button>
+  );
 }
 
 function NewTabDropdown() {
@@ -97,43 +169,50 @@ function NewTabDropdown() {
 }
 
 export function TabBar() {
-  const { tabs, activeTabId, setActiveTab, closeTab } = useTabStore();
+  const { tabs, activeTabId, setActiveTab, closeTab, reorderTabs } = useTabStore();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const fromIndex = tabs.findIndex((t) => t.id === active.id);
+    const toIndex = tabs.findIndex((t) => t.id === over.id);
+    if (fromIndex !== -1 && toIndex !== -1) {
+      reorderTabs(fromIndex, toIndex);
+    }
+  };
 
   if (tabs.length === 0) return null;
 
   return (
     <div className="flex items-center border-b border-[var(--color-border)] bg-[var(--color-bg)]">
-      <div className="flex flex-1 overflow-x-auto">
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeTabId;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`group flex shrink-0 items-center gap-1.5 border-r border-[var(--color-border)] px-3 py-1.5 text-sm transition-colors ${
-                isActive
-                  ? "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
-                  : "bg-[var(--color-bg)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-secondary)]"
-              }`}
-            >
-              <TabBadge tab={tab} />
-              <span className="max-w-[120px] truncate">{tab.name}</span>
-              {tab.isDirty && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-muted)]" />
-              )}
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeTab(tab.id);
-                }}
-                className="ml-1 rounded p-0.5 opacity-0 hover:bg-[var(--color-border)] group-hover:opacity-100"
-              >
-                <X className="h-3 w-3" />
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={tabs.map((t) => t.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="flex flex-1 overflow-x-auto">
+            {tabs.map((tab) => (
+              <SortableTab
+                key={tab.id}
+                tab={tab}
+                isActive={tab.id === activeTabId}
+                onActivate={() => setActiveTab(tab.id)}
+                onClose={() => closeTab(tab.id)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
       <NewTabDropdown />
     </div>
   );

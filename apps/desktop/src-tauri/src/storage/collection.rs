@@ -250,6 +250,23 @@ pub fn rename_item(path: &Path, new_name: &str) -> Result<PathBuf, String> {
     Ok(new_path)
 }
 
+/// Save the ordering of items within a folder by writing/updating `_folder.yaml`.
+pub fn save_folder_order(dir: &Path, order: &[String]) -> Result<(), String> {
+    let config_path = dir.join("_folder.yaml");
+
+    // Load existing config or create new
+    let mut config = load_folder_config(dir).unwrap_or(FolderConfig {
+        name: None,
+        auth: None,
+        order: Vec::new(),
+    });
+    config.order = order.to_vec();
+
+    let yaml = serde_yaml::to_string(&config)
+        .map_err(|e| format!("Failed to serialize folder config: {e}"))?;
+    atomic_write(&config_path, &yaml)
+}
+
 /// Write content atomically: write to .tmp file, then rename.
 fn atomic_write(path: &Path, content: &str) -> Result<(), String> {
     let tmp_path = path.with_extension("apiark.tmp");

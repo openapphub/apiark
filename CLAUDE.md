@@ -174,12 +174,12 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Request body editor: JSON, XML, Form Data, URL-encoded, Raw Text, Binary, None
 - [x] Headers editor (key-value table with enable/disable toggles, bulk edit)
 - [x] Query parameters editor (key-value table with enable/disable toggles)
-- [ ] Path variables (`:paramName` in URL auto-detected)
+- [x] Path variables (`:paramName` in URL auto-detected)
 - [x] Response viewer: Pretty (syntax-highlighted JSON/XML/HTML), Raw, Preview (HTML render)
 - [x] Response metadata: status code (color-coded), response time (ms), response size (bytes/KB/MB)
 - [x] Response headers viewer
 - [x] Response cookies viewer
-- [ ] Copy response to clipboard, save response to file
+- [x] Copy response to clipboard, save response to file
 - [x] cURL import (paste cURL -> auto-parse to request)
 - [x] cURL export (any request -> copy as cURL)
 - [x] Code generation (JavaScript fetch, Python requests, cURL)
@@ -188,18 +188,18 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Create/rename/delete collections
 - [x] Create/rename/delete folders (unlimited nesting)
 - [x] Create/rename/delete/duplicate requests
-- [ ] Drag-and-drop reordering of requests and folders
+- [x] Drag-and-drop reordering of requests and folders
 - [x] Collection stored as directory on filesystem
 - [x] Each request = one `.yaml` file
 - [x] Collection config = `apiark.yaml` at collection root
-- [ ] Request search/filter across all collections
+- [x] Request search/filter across all collections
 
 **Tabbed Interface:**
 - [x] Multiple request tabs (like browser tabs)
 - [x] Tab persistence across sessions
 - [x] Unsaved changes indicator (dot on tab)
 - [x] Close / Close Others / Close All
-- [ ] Tab reordering via drag-and-drop
+- [x] Tab reordering via drag-and-drop
 
 **Environment Variables:**
 - [x] Global environment (applies to all collections)
@@ -207,7 +207,7 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Multiple named environments per collection (dev, staging, prod)
 - [x] One-click environment switching (dropdown in header)
 - [x] Variable reference: `{{variableName}}` syntax
-- [ ] Variable quick-view (eye icon to peek current values)
+- [x] Variable quick-view (eye icon to peek current values)
 - [x] Secret variables (masked in UI, excluded from Git)
 - [ ] `.env` file support (auto-load from collection root)
 - [x] Environment files stored as `environments/*.yaml`
@@ -240,11 +240,11 @@ No tool currently delivers ALL of these simultaneously:
 - [x] `Ctrl/Cmd + T` — New tab
 - [x] `Ctrl/Cmd + W` — Close tab
 - [x] `Ctrl/Cmd + S` — Save request
-- [ ] `Ctrl/Cmd + E` — Switch environment
+- [x] `Ctrl/Cmd + E` — Switch environment
 - [x] `Ctrl/Cmd + K` — Command palette
-- [ ] `Ctrl/Cmd + L` — Focus URL bar
+- [x] `Ctrl/Cmd + L` — Focus URL bar
 - [x] `Ctrl/Cmd + ,` — Settings
-- [ ] `Ctrl/Cmd + \` — Toggle sidebar
+- [x] `Ctrl/Cmd + \` — Toggle sidebar
 
 ### Phase 2 — Power Features (Days 91-180) — IN PROGRESS
 

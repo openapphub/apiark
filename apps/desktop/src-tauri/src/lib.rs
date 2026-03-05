@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 
 use commands::collection::{
     create_folder, create_request, delete_item, open_collection, read_request_file, rename_item,
-    save_request_file,
+    save_folder_order, save_request_file,
 };
 use commands::environment::{get_resolved_variables, load_environments, save_environment};
 use commands::greet;
@@ -99,6 +99,7 @@ pub fn run() {
             create_folder,
             delete_item,
             rename_item,
+            save_folder_order,
             // Environment commands
             load_environments,
             save_environment,

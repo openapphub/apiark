@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { CollectionSidebar } from "@/components/collection/collection-sidebar";
 import { TabBar } from "@/components/tabs/tab-bar";
 import { UrlBar } from "@/components/request/url-bar";
@@ -19,7 +19,7 @@ import { useSettingsStore } from "@/stores/settings-store";
 import { useTheme } from "@/hooks/use-theme";
 
 function App() {
-  const { newTab, closeTab, save, persistTabs, restoreTabs } = useTabStore();
+  const { newTab, closeTab, save, send, persistTabs, restoreTabs } = useTabStore();
   const activeTab = useActiveTab();
   const tabs = useTabStore((s) => s.tabs);
   const activeTabId = useTabStore((s) => s.activeTabId);
@@ -29,6 +29,9 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [runnerOpen, setRunnerOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const urlBarRef = useRef<HTMLInputElement>(null);
+  const envSelectorRef = useRef<HTMLSelectElement>(null);
 
   useTheme();
 
@@ -86,12 +89,28 @@ function App() {
           e.preventDefault();
           setCommandPaletteOpen(true);
           break;
+        case "e":
+          e.preventDefault();
+          envSelectorRef.current?.focus();
+          break;
+        case "l":
+          e.preventDefault();
+          urlBarRef.current?.focus();
+          break;
+        case "\\":
+          e.preventDefault();
+          setSidebarCollapsed((prev) => !prev);
+          break;
+        case "enter":
+          e.preventDefault();
+          send();
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [newTab, closeTab, save, activeTab]);
+  }, [newTab, closeTab, save, send, activeTab]);
 
   // Refresh history when a request completes
   useEffect(() => {
@@ -103,7 +122,11 @@ function App() {
   return (
     <div className="flex h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       {/* Sidebar */}
-      <CollectionSidebar onOpenSettings={openSettings} />
+      <CollectionSidebar
+        onOpenSettings={openSettings}
+        collapsed={sidebarCollapsed}
+        envSelectorRef={envSelectorRef}
+      />
 
       {/* Main Panel */}
       <main className="flex flex-1 flex-col overflow-hidden">
@@ -111,7 +134,7 @@ function App() {
         <TabBar />
 
         {activeTab ? (
-          <ProtocolView protocol={activeTab.protocol} />
+          <ProtocolView protocol={activeTab.protocol} urlBarRef={urlBarRef} />
         ) : (
           <EmptyState />
         )}
@@ -133,7 +156,13 @@ function App() {
   );
 }
 
-function ProtocolView({ protocol }: { protocol: TabProtocol }) {
+function ProtocolView({
+  protocol,
+  urlBarRef,
+}: {
+  protocol: TabProtocol;
+  urlBarRef: React.RefObject<HTMLInputElement | null>;
+}) {
   switch (protocol) {
     case "graphql":
       return <GraphQLView />;
@@ -144,7 +173,7 @@ function ProtocolView({ protocol }: { protocol: TabProtocol }) {
     default:
       return (
         <>
-          <UrlBar />
+          <UrlBar ref={urlBarRef} />
           <div className="flex flex-1 overflow-hidden">
             <div className="flex w-1/2 flex-col border-r border-[var(--color-border)]">
               <RequestPanel />

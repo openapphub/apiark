@@ -67,6 +67,13 @@ pub async fn delete_item(path: String, collection_name: String) -> Result<(), St
 }
 
 #[tauri::command]
+pub async fn save_folder_order(dir: String, order: Vec<String>) -> Result<(), String> {
+    let dir_path = Path::new(&dir);
+    tracing::debug!(dir = %dir, "Saving folder order");
+    collection::save_folder_order(dir_path, &order)
+}
+
+#[tauri::command]
 pub async fn rename_item(path: String, new_name: String) -> Result<String, String> {
     let item_path = Path::new(&path);
     tracing::info!(path = %path, new_name = %new_name, "Renaming item");

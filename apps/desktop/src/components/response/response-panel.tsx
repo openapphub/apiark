@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useActiveTab } from "@/stores/tab-store";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ClipboardCopy, Download, Check } from "lucide-react";
 import { CodeGenerationPanel } from "./code-generation-panel";
 import { TestResultsPanel } from "./test-results-panel";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
 import type { ConsoleEntry } from "@apiark/types";
 
 type ResponseTab = "body" | "headers" | "cookies" | "tests" | "console" | "code";
@@ -165,9 +167,12 @@ export function ResponsePanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto p-3">
         {activeTab === "body" && (
-          <pre className="whitespace-pre-wrap break-all font-mono text-sm text-[var(--color-text-primary)]">
-            {tryFormatJson(response.body)}
-          </pre>
+          <div>
+            <ResponseBodyActions body={response.body} />
+            <pre className="whitespace-pre-wrap break-all font-mono text-sm text-[var(--color-text-primary)]">
+              {tryFormatJson(response.body)}
+            </pre>
+          </div>
         )}
 
         {activeTab === "headers" && (
@@ -218,6 +223,59 @@ export function ResponsePanel() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function ResponseBodyActions({ body }: { body: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(body);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const filePath = await save({
+        filters: [
+          { name: "JSON", extensions: ["json"] },
+          { name: "XML", extensions: ["xml"] },
+          { name: "Text", extensions: ["txt"] },
+          { name: "All Files", extensions: ["*"] },
+        ],
+      });
+      if (filePath) {
+        await writeTextFile(filePath, body);
+      }
+    } catch (err) {
+      console.error("Failed to save response:", err);
+    }
+  };
+
+  return (
+    <div className="mb-2 flex gap-1">
+      <button
+        onClick={handleCopy}
+        className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
+        title="Copy to clipboard"
+      >
+        {copied ? <Check className="h-3 w-3 text-green-500" /> : <ClipboardCopy className="h-3 w-3" />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+      <button
+        onClick={handleSave}
+        className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
+        title="Save to file"
+      >
+        <Download className="h-3 w-3" />
+        Save
+      </button>
     </div>
   );
 }

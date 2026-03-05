@@ -160,6 +160,13 @@ export async function deleteItem(
   return await invoke<void>("delete_item", { path, collectionName });
 }
 
+export async function saveFolderOrder(
+  dir: string,
+  order: string[],
+): Promise<void> {
+  return await invoke<void>("save_folder_order", { dir, order });
+}
+
 export async function renameItem(
   path: string,
   newName: string,

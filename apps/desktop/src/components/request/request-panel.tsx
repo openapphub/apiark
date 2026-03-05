@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTabStore, useActiveTab } from "@/stores/tab-store";
 import { KeyValueEditor } from "./key-value-editor";
 import type { AuthConfig, BodyType, OAuth2GrantType, OAuthTokenStatus } from "@apiark/types";
 import { oauthStartFlow, oauthGetTokenStatus, oauthClearToken } from "@/lib/tauri-api";
+
+/** Extract :paramName path variables from a URL */
+function extractPathVariables(url: string): string[] {
+  const matches = url.match(/:([\w]+)/g);
+  if (!matches) return [];
+  return [...new Set(matches.map((m) => m.slice(1)))];
+}
 
 type Tab = "params" | "headers" | "body" | "auth" | "scripts" | "tests";
 
@@ -40,7 +47,10 @@ export function RequestPanel() {
 
   if (!tab) return null;
 
-  const { params, headers, body, auth } = tab;
+  const { params, headers, body, auth, url } = tab;
+  const { setUrl } = useTabStore();
+
+  const pathVars = useMemo(() => extractPathVariables(url), [url]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -80,12 +90,21 @@ export function RequestPanel() {
       {/* Tab content */}
       <div className="flex-1 overflow-auto p-3">
         {activeTab === "params" && (
-          <KeyValueEditor
-            pairs={params}
-            onChange={setParams}
-            keyPlaceholder="Parameter"
-            valuePlaceholder="Value"
-          />
+          <div className="space-y-4">
+            {pathVars.length > 0 && (
+              <PathVariablesEditor
+                url={url}
+                pathVars={pathVars}
+                onUrlChange={setUrl}
+              />
+            )}
+            <KeyValueEditor
+              pairs={params}
+              onChange={setParams}
+              keyPlaceholder="Parameter"
+              valuePlaceholder="Value"
+            />
+          </div>
         )}
 
         {activeTab === "headers" && (
@@ -122,6 +141,53 @@ export function RequestPanel() {
             onTestScriptChange={setTestScript}
           />
         )}
+      </div>
+    </div>
+  );
+}
+
+function PathVariablesEditor({
+  url,
+  pathVars,
+  onUrlChange,
+}: {
+  url: string;
+  pathVars: string[];
+  onUrlChange: (url: string) => void;
+}) {
+  // Extract current values from the URL
+  // We store a map of param name -> user-typed value
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  const handleChange = (paramName: string, value: string) => {
+    setValues((prev) => ({ ...prev, [paramName]: value }));
+
+    // Replace :paramName with the value in the URL
+    if (value) {
+      onUrlChange(url.replace(new RegExp(`:${paramName}\\b`), value));
+    }
+  };
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+        Path Variables
+      </label>
+      <div className="space-y-1">
+        {pathVars.map((param) => (
+          <div key={param} className="grid grid-cols-[1fr_1fr] gap-2">
+            <div className="flex items-center rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-purple-400">
+              :{param}
+            </div>
+            <input
+              type="text"
+              value={values[param] ?? ""}
+              onChange={(e) => handleChange(param, e.target.value)}
+              placeholder="Value"
+              className="rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
