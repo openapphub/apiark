@@ -27,6 +27,39 @@ pub fn build_client(params: &SendRequestParams) -> Result<Client, HttpEngineErro
         builder = builder.danger_accept_invalid_certs(true);
     }
 
+    // Custom CA certificate
+    if let Some(ca_path) = &params.ca_cert_path {
+        if !ca_path.is_empty() {
+            let ca_pem = std::fs::read(ca_path)
+                .map_err(|e| HttpEngineError::RequestError(format!("Failed to read CA cert '{}': {}", ca_path, e)))?;
+            let cert = reqwest::Certificate::from_pem(&ca_pem)
+                .map_err(|e| HttpEngineError::RequestError(format!("Invalid CA certificate: {}", e)))?;
+            builder = builder.add_root_certificate(cert);
+        }
+    }
+
+    // Client certificate (mutual TLS)
+    if let Some(cert_path) = &params.client_cert_path {
+        if !cert_path.is_empty() {
+            let cert_data = std::fs::read(cert_path)
+                .map_err(|e| HttpEngineError::RequestError(format!("Failed to read client cert '{}': {}", cert_path, e)))?;
+
+            // PEM format — combine cert + key into a single PEM buffer
+            let mut pem_buf = cert_data;
+            if let Some(key_path) = &params.client_key_path {
+                if !key_path.is_empty() {
+                    let key_data = std::fs::read(key_path)
+                        .map_err(|e| HttpEngineError::RequestError(format!("Failed to read client key '{}': {}", key_path, e)))?;
+                    pem_buf.push(b'\n');
+                    pem_buf.extend_from_slice(&key_data);
+                }
+            }
+            let identity = reqwest::Identity::from_pem(&pem_buf)
+                .map_err(|e| HttpEngineError::RequestError(format!("Invalid PEM client certificate: {}", e)))?;
+            builder = builder.identity(identity);
+        }
+    }
+
     if let Some(proxy) = &params.proxy {
         let mut reqwest_proxy = reqwest::Proxy::all(&proxy.url)
             .map_err(|e| HttpEngineError::RequestError(format!("Invalid proxy URL: {}", e)))?;

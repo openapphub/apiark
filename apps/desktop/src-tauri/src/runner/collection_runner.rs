@@ -87,6 +87,10 @@ fn request_file_to_params(file: &RequestFile) -> SendRequestParams {
         follow_redirects: true,
         verify_ssl: true,
         cookies: file.cookies.clone(),
+        ca_cert_path: None,
+        client_cert_path: None,
+        client_key_path: None,
+        client_cert_passphrase: None,
     }
 }
 

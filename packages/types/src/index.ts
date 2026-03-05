@@ -118,6 +118,10 @@ export interface SendRequestParams {
   followRedirects: boolean;
   verifySsl: boolean;
   cookies?: Record<string, string>;
+  caCertPath?: string;
+  clientCertPath?: string;
+  clientKeyPath?: string;
+  clientCertPassphrase?: string;
 }
 
 // ── Response (matches Rust ResponseData) ──
@@ -271,6 +275,10 @@ export interface AppSettings {
   sidebarWidth: number;
   onboardingComplete: boolean;
   crashReportsEnabled: boolean | null;
+  caCertPath: string | null;
+  clientCertPath: string | null;
+  clientKeyPath: string | null;
+  clientCertPassphrase: string | null;
 }
 
 // ── Tab Protocol ──

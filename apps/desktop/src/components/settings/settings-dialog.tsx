@@ -1,7 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Sun, Moon, Monitor } from "lucide-react";
+import { X, Sun, Moon, Monitor, FolderOpen } from "lucide-react";
 import { useSettingsStore } from "@/stores/settings-store";
 import type { AppSettings } from "@apiark/types";
+import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -156,10 +157,113 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 )}
               </div>
             </section>
+
+            {/* Certificates Section */}
+            <section>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                Certificates
+              </h3>
+
+              {/* Custom CA Certificate */}
+              <div className="mb-4">
+                <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">
+                  Custom CA Certificate (PEM)
+                </label>
+                <FilePathInput
+                  value={settings.caCertPath ?? ""}
+                  onChange={(v) => update({ caCertPath: v || null })}
+                  placeholder="Path to CA certificate (.pem, .crt)"
+                  filters={[{ name: "Certificates", extensions: ["pem", "crt", "cer"] }]}
+                />
+              </div>
+
+              {/* Client Certificate */}
+              <div className="mb-4">
+                <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">
+                  Client Certificate (PEM)
+                </label>
+                <FilePathInput
+                  value={settings.clientCertPath ?? ""}
+                  onChange={(v) => update({ clientCertPath: v || null })}
+                  placeholder="Path to client certificate (.pem, .crt, .pfx)"
+                  filters={[{ name: "Certificates", extensions: ["pem", "crt", "cer", "pfx", "p12"] }]}
+                />
+              </div>
+
+              {/* Client Key */}
+              <div className="mb-4">
+                <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">
+                  Client Key (PEM)
+                </label>
+                <FilePathInput
+                  value={settings.clientKeyPath ?? ""}
+                  onChange={(v) => update({ clientKeyPath: v || null })}
+                  placeholder="Path to client private key (.pem, .key)"
+                  filters={[{ name: "Keys", extensions: ["pem", "key"] }]}
+                />
+              </div>
+
+              {/* PFX Passphrase */}
+              {settings.clientCertPath?.match(/\.(pfx|p12)$/i) && (
+                <div className="mb-4">
+                  <label className="mb-2 block text-sm text-[var(--color-text-secondary)]">
+                    PFX Passphrase
+                  </label>
+                  <input
+                    type="password"
+                    value={settings.clientCertPassphrase ?? ""}
+                    onChange={(e) => update({ clientCertPassphrase: e.target.value || null })}
+                    placeholder="Passphrase (optional)"
+                    className="w-full rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                  />
+                </div>
+              )}
+            </section>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+function FilePathInput({
+  value,
+  onChange,
+  placeholder,
+  filters,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  filters: { name: string; extensions: string[] }[];
+}) {
+  const browse = async () => {
+    const selected = await openFileDialog({
+      multiple: false,
+      filters,
+    });
+    if (selected) {
+      onChange(selected);
+    }
+  };
+
+  return (
+    <div className="flex gap-2">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="flex-1 rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+      />
+      <button
+        onClick={browse}
+        className="rounded bg-[var(--color-elevated)] px-2 py-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+        title="Browse..."
+      >
+        <FolderOpen className="h-4 w-4" />
+      </button>
+    </div>
   );
 }
 

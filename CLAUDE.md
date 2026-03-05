@@ -209,7 +209,7 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Variable reference: `{{variableName}}` syntax
 - [x] Variable quick-view (eye icon to peek current values)
 - [x] Secret variables (masked in UI, excluded from Git)
-- [ ] `.env` file support (auto-load from collection root)
+- [x] `.env` file support (auto-load from collection root)
 - [x] Environment files stored as `environments/*.yaml`
 
 **Basic Authentication:**
@@ -228,8 +228,8 @@ No tool currently delivers ALL of these simultaneously:
 **Settings:**
 - [x] Proxy configuration (HTTP/SOCKS)
 - [x] SSL certificate verification toggle
-- [ ] Custom CA certificates
-- [ ] Client certificates (PFX, PEM)
+- [x] Custom CA certificates
+- [x] Client certificates (PFX, PEM)
 - [x] Request timeout configuration
 - [x] Follow redirects toggle
 - [x] Theme: Light / Dark / System

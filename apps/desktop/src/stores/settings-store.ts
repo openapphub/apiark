@@ -20,6 +20,10 @@ const defaultSettings: AppSettings = {
   sidebarWidth: 256,
   onboardingComplete: false,
   crashReportsEnabled: null,
+  caCertPath: null,
+  clientCertPath: null,
+  clientKeyPath: null,
+  clientCertPassphrase: null,
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({

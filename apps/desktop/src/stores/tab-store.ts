@@ -514,6 +514,10 @@ export const useTabStore = create<TabState>((set, get) => ({
       timeoutMs: settings.timeoutMs,
       followRedirects: settings.followRedirects,
       verifySsl: settings.verifySsl,
+      caCertPath: settings.caCertPath ?? undefined,
+      clientCertPath: settings.clientCertPath ?? undefined,
+      clientKeyPath: settings.clientKeyPath ?? undefined,
+      clientCertPassphrase: settings.clientCertPassphrase ?? undefined,
     };
 
     const hasScripts = tab.preRequestScript || tab.postResponseScript || tab.testScript || tab.assertions;

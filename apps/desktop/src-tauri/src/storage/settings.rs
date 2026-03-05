@@ -25,6 +25,18 @@ pub struct AppSettings {
     pub onboarding_complete: bool,
     #[serde(default)]
     pub crash_reports_enabled: Option<bool>,
+    /// Path to a custom CA certificate (PEM format)
+    #[serde(default)]
+    pub ca_cert_path: Option<String>,
+    /// Path to a client certificate (PEM or PFX/PKCS12)
+    #[serde(default)]
+    pub client_cert_path: Option<String>,
+    /// Path to the client certificate private key (PEM, required for PEM certs)
+    #[serde(default)]
+    pub client_key_path: Option<String>,
+    /// Passphrase for PFX/PKCS12 client certificates
+    #[serde(default)]
+    pub client_cert_passphrase: Option<String>,
 }
 
 fn default_theme() -> String {
@@ -56,6 +68,10 @@ impl Default for AppSettings {
             sidebar_width: default_sidebar_width(),
             onboarding_complete: false,
             crash_reports_enabled: None,
+            ca_cert_path: None,
+            client_cert_path: None,
+            client_key_path: None,
+            client_cert_passphrase: None,
         }
     }
 }
