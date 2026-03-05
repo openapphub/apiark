@@ -7,7 +7,7 @@ import {
   Server,
   FileText,
   Activity,
-  Sparkles,
+  MessageSquare,
 } from "lucide-react";
 
 export type ActivityView = "collections" | "environments" | "history" | "mock" | "monitor" | "docs";
@@ -83,7 +83,7 @@ export function ActivityBar({
 
       {/* Bottom actions */}
       <div className="flex flex-col items-center gap-1">
-        <ActivityBarButton icon={Sparkles} label="AI Assistant (Ctrl+Shift+A)" onClick={onOpenAi} activeColor="text-purple-400" activeGlow="bg-purple-400/10" />
+        <ActivityBarButton icon={MessageSquare} label="AI Assistant (Ctrl+Shift+A)" onClick={onOpenAi} activeColor="text-purple-400" activeGlow="bg-purple-400/10" />
         <ActivityBarButton icon={Terminal} label="Console (Ctrl+`)" onClick={onToggleConsole} activeColor="text-orange-400" activeGlow="bg-orange-400/10" />
         <ActivityBarButton icon={Settings} label="Settings (Ctrl+,)" onClick={onOpenSettings} />
       </div>
