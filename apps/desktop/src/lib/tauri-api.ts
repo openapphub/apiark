@@ -178,6 +178,26 @@ export async function renameItem(
   return await invoke<string>("rename_item", { path, newName });
 }
 
+// ── Collection Defaults ──
+
+export async function getCollectionDefaults(
+  collectionPath: string,
+): Promise<import("@apiark/types").CollectionDefaults> {
+  return await invoke<import("@apiark/types").CollectionDefaults>("get_collection_defaults", {
+    collectionPath,
+  });
+}
+
+export async function updateCollectionDefaults(
+  collectionPath: string,
+  defaults: import("@apiark/types").CollectionDefaults,
+): Promise<void> {
+  return await invoke<void>("update_collection_defaults", {
+    collectionPath,
+    defaults,
+  });
+}
+
 // ── Environments ──
 
 export async function loadEnvironments(

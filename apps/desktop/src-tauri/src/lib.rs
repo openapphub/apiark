@@ -18,8 +18,9 @@ mod websocket;
 use std::sync::{Arc, Mutex};
 
 use commands::collection::{
-    create_folder, create_request, delete_item, open_collection, read_request_file, rename_item,
-    create_sample_collection, save_folder_order, save_request_file,
+    create_folder, create_request, delete_item, get_collection_defaults, open_collection,
+    read_request_file, rename_item, create_sample_collection, save_folder_order,
+    save_request_file, update_collection_defaults,
 };
 use commands::environment::{get_resolved_variables, load_environments, load_root_dotenv, save_environment};
 use commands::greet;
@@ -164,6 +165,8 @@ pub fn run() {
             rename_item,
             save_folder_order,
             create_sample_collection,
+            get_collection_defaults,
+            update_collection_defaults,
             // Environment commands
             load_environments,
             save_environment,

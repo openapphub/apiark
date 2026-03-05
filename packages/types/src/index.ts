@@ -179,6 +179,15 @@ export type CollectionNode =
       path: string;
     };
 
+// ── Collection Defaults ──
+
+export interface CollectionDefaults {
+  auth?: AuthConfig;
+  sendCookies: boolean;
+  storeCookies: boolean;
+  persistCookies: boolean;
+}
+
 // ── Scripting & Testing ──
 
 export interface TestResult {

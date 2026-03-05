@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { CollectionNode, HttpMethod } from "@apiark/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CollectionNode, CollectionDefaults, HttpMethod } from "@apiark/types";
 import { useCollectionStore } from "@/stores/collection-store";
 import { useTabStore } from "@/stores/tab-store";
 import { useMockStore } from "@/stores/mock-store";
@@ -17,7 +17,11 @@ import {
   Radio,
   FileText,
   GripVertical,
+  Cookie,
+  X,
 } from "lucide-react";
+import { getCollectionDefaults, updateCollectionDefaults } from "@/lib/tauri-api";
+import * as Dialog from "@radix-ui/react-dialog";
 import { exportCollectionToFile } from "@/lib/export-collection";
 import { saveFolderOrder } from "@/lib/tauri-api";
 import {
@@ -352,6 +356,7 @@ function TreeNodeRow({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [cookieSettingsPath, setCookieSettingsPath] = useState<string | null>(null);
 
   const isExpanded = expandedPaths.has(node.path);
 
@@ -561,6 +566,14 @@ function TreeNodeRow({
                       useDocsStore.getState().openDocs(node.path, node.name);
                     },
                   },
+                  {
+                    label: "Cookie Settings",
+                    icon: Cookie,
+                    onClick: () => {
+                      closeContextMenu();
+                      setCookieSettingsPath(node.path);
+                    },
+                  },
                 ]
               : [
                   { label: "Rename", icon: Pencil, onClick: handleRename },
@@ -569,7 +582,124 @@ function TreeNodeRow({
           ]}
         />
       )}
+      {cookieSettingsPath && (
+        <CookieSettingsDialog
+          collectionPath={cookieSettingsPath}
+          onClose={() => setCookieSettingsPath(null)}
+        />
+      )}
     </>
+  );
+}
+
+// ── Cookie Settings Dialog ──
+
+function CookieSettingsDialog({
+  collectionPath,
+  onClose,
+}: {
+  collectionPath: string;
+  onClose: () => void;
+}) {
+  const [defaults, setDefaults] = useState<CollectionDefaults | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCollectionDefaults(collectionPath)
+      .then((d) => { setDefaults(d); setLoading(false); })
+      .catch((e) => { console.error("Failed to load collection defaults:", e); setLoading(false); });
+  }, [collectionPath]);
+
+  const toggle = async (field: keyof CollectionDefaults, value: boolean) => {
+    if (!defaults) return;
+    const updated = { ...defaults, [field]: value };
+    setDefaults(updated);
+    try {
+      await updateCollectionDefaults(collectionPath, updated);
+    } catch (e) {
+      console.error("Failed to update collection defaults:", e);
+    }
+  };
+
+  return (
+    <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl focus:outline-none">
+          <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-3">
+            <Dialog.Title className="text-sm font-semibold text-[var(--color-text-primary)]">
+              Cookie Settings
+            </Dialog.Title>
+            <Dialog.Close className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-primary)]">
+              <X className="h-4 w-4" />
+            </Dialog.Close>
+          </div>
+          <div className="space-y-3 p-5">
+            {loading ? (
+              <p className="text-sm text-[var(--color-text-muted)]">Loading...</p>
+            ) : defaults ? (
+              <>
+                <ToggleRow
+                  label="Send Cookies"
+                  description="Automatically send stored cookies with requests"
+                  checked={defaults.sendCookies}
+                  onChange={(v) => toggle("sendCookies", v)}
+                />
+                <ToggleRow
+                  label="Store Cookies"
+                  description="Automatically store cookies from responses"
+                  checked={defaults.storeCookies}
+                  onChange={(v) => toggle("storeCookies", v)}
+                />
+                <ToggleRow
+                  label="Persist Cookies"
+                  description="Save cookies to disk across app restarts"
+                  checked={defaults.persistCookies}
+                  onChange={(v) => toggle("persistCookies", v)}
+                />
+              </>
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">Failed to load settings.</p>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-sm text-[var(--color-text-primary)]">{label}</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{description}</div>
+      </div>
+      <button
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+          checked ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"
+        }`}
+      >
+        <span
+          className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+            checked ? "translate-x-4.5" : "translate-x-0.5"
+          }`}
+        />
+      </button>
+    </div>
   );
 }
 

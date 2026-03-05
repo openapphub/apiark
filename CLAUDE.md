@@ -339,7 +339,7 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Per-collection isolated cookie jars
 - [x] Persistent cookie mode (opt-in per collection)
 - [x] Per-request cookie override in YAML
-- [ ] Collection-level sendCookies/storeCookies toggles
+- [x] Collection-level sendCookies/storeCookies toggles
 
 ### Phase 3 — Enterprise Features (Days 181-365)
 

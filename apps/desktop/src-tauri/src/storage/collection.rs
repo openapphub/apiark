@@ -279,6 +279,23 @@ pub fn save_folder_order(dir: &Path, order: &[String]) -> Result<(), String> {
     atomic_write(&config_path, &yaml)
 }
 
+/// Load the collection config from .apiark/apiark.yaml.
+pub fn load_collection_config(collection_path: &Path) -> Result<CollectionConfig, String> {
+    let config_path = collection_path.join(".apiark").join("apiark.yaml");
+    let content = fs::read_to_string(&config_path)
+        .map_err(|e| format!("Failed to read collection config: {e}"))?;
+    serde_yaml::from_str(&content)
+        .map_err(|e| format!("Invalid collection config YAML: {e}"))
+}
+
+/// Save the collection config to .apiark/apiark.yaml (atomic write).
+pub fn save_collection_config(collection_path: &Path, config: &CollectionConfig) -> Result<(), String> {
+    let config_path = collection_path.join(".apiark").join("apiark.yaml");
+    let yaml = serde_yaml::to_string(config)
+        .map_err(|e| format!("Failed to serialize collection config: {e}"))?;
+    atomic_write(&config_path, &yaml)
+}
+
 /// Write content atomically: write to .tmp file, then rename.
 fn atomic_write(path: &Path, content: &str) -> Result<(), String> {
     let tmp_path = path.with_extension("apiark.tmp");

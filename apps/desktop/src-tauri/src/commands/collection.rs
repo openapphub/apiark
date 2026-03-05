@@ -1,8 +1,34 @@
 use std::path::{Path, PathBuf};
 
-use crate::models::collection::{CollectionConfig, CollectionNode, RequestFile};
+use crate::models::collection::{CollectionConfig, CollectionDefaults, CollectionNode, RequestFile};
 use crate::models::request::HttpMethod;
 use crate::storage::collection;
+
+#[tauri::command]
+pub async fn get_collection_defaults(collection_path: String) -> Result<CollectionDefaults, String> {
+    let path = collection_path.clone();
+    tokio::task::spawn_blocking(move || {
+        let config = collection::load_collection_config(Path::new(&path))?;
+        Ok(config.defaults)
+    })
+    .await
+    .map_err(|e| format!("Task join error: {e}"))?
+}
+
+#[tauri::command]
+pub async fn update_collection_defaults(
+    collection_path: String,
+    defaults: CollectionDefaults,
+) -> Result<(), String> {
+    let path = collection_path.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut config = collection::load_collection_config(Path::new(&path))?;
+        config.defaults = defaults;
+        collection::save_collection_config(Path::new(&path), &config)
+    })
+    .await
+    .map_err(|e| format!("Task join error: {e}"))?
+}
 
 #[tauri::command]
 pub async fn open_collection(path: String) -> Result<CollectionNode, String> {
