@@ -43,7 +43,7 @@ export function ActivityBar({
     <div className="flex w-12 shrink-0 flex-col items-center border-r border-[var(--color-border)] bg-[var(--color-activity-bar)] py-3">
       {/* Logo */}
       <div className="mb-4 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-[var(--color-accent)]">
-        <img src="/app-icon.png" alt="ApiArk" className="h-8 w-8 brightness-[2] saturate-0 invert" />
+        <img src="/app-icon.png" alt="ApiArk" className="h-6 w-6" />
       </div>
 
       {/* Top nav items */}
