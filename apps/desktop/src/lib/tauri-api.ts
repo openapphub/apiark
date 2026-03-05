@@ -568,3 +568,37 @@ export async function deactivateLicense(): Promise<LicenseStatus> {
 export async function openNewWindow(): Promise<string> {
   return await invoke<string>("open_new_window", {});
 }
+
+// ── Plugins ──
+
+export interface PluginManifest {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  runtime: "js" | "wasm";
+  entry: string;
+  hooks: string[];
+}
+
+export interface PluginInfo {
+  manifest: PluginManifest;
+  path: string;
+  enabled: boolean;
+}
+
+export async function listPlugins(): Promise<PluginInfo[]> {
+  return await invoke<PluginInfo[]>("list_plugins", {});
+}
+
+export async function togglePlugin(name: string): Promise<boolean> {
+  return await invoke<boolean>("toggle_plugin", { name });
+}
+
+export async function uninstallPlugin(name: string): Promise<void> {
+  return await invoke<void>("uninstall_plugin", { name });
+}
+
+export async function installPlugin(path: string): Promise<PluginInfo> {
+  return await invoke<PluginInfo>("install_plugin", { path });
+}

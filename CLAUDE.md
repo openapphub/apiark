@@ -349,7 +349,7 @@ No tool currently delivers ALL of these simultaneously:
 - [x] Local scheduled testing (cron, notifications, webhooks, charts)
 - [x] API documentation generation (HTML + Markdown export)
 - [x] OpenAPI spec editor with Spectral linting
-- [ ] Plugin system (JS + WASM)
+- [x] Plugin system (JS + WASM)
 - [ ] MQTT, Socket.IO support
 - [x] Response diff
 - [x] Performance profiling

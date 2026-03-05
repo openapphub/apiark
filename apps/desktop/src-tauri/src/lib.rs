@@ -1,4 +1,5 @@
 mod commands;
+mod plugins;
 mod docs;
 mod exporter;
 mod grpc;
@@ -49,6 +50,8 @@ use commands::state::{load_persisted_state, save_persisted_state};
 use commands::trash::{list_trash, restore_from_trash, empty_trash};
 use commands::watcher::{watch_collection, unwatch_collection};
 use commands::window::open_new_window;
+use commands::plugins::{list_plugins, toggle_plugin, uninstall_plugin, install_plugin};
+use plugins::manager::PluginManager;
 use oauth::OAuthTokenStore;
 use http::cookies::CookieJarManager;
 use watcher::collection_watcher::CollectionWatcher;
@@ -154,6 +157,7 @@ pub fn run() {
         .manage(GrpcManager::new())
         .manage(MockServerManager::new())
         .manage(MonitorManager::new())
+        .manage(PluginManager::new(&apiark_dir))
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -253,6 +257,11 @@ pub fn run() {
             deactivate_license,
             // Window commands
             open_new_window,
+            // Plugin commands
+            list_plugins,
+            toggle_plugin,
+            uninstall_plugin,
+            install_plugin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

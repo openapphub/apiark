@@ -1,5 +1,6 @@
 pub mod backup;
 pub mod license;
+pub mod plugins;
 pub mod collection;
 pub mod cookies;
 pub mod curl;
