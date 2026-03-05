@@ -693,6 +693,49 @@ export async function proxyCaExists(): Promise<boolean> {
   return await invoke<boolean>("proxy_ca_exists", {});
 }
 
+// ── AI ──
+
+export interface AiGenerateParams {
+  prompt: string;
+  context?: string;
+  apiKey: string;
+  endpoint: string;
+  model: string;
+}
+
+export interface AiGeneratedRequest {
+  name: string;
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  body: string | null;
+  bodyType: string | null;
+  description: string | null;
+}
+
+export interface AiGeneratedTests {
+  tests: string;
+  assertions: string | null;
+}
+
+export async function aiGenerateRequest(params: AiGenerateParams): Promise<AiGeneratedRequest> {
+  return await invoke<AiGeneratedRequest>("ai_generate_request", { params });
+}
+
+export async function aiGenerateTests(
+  params: AiGenerateParams,
+  requestYaml: string,
+  responseBody: string,
+  responseStatus: number,
+): Promise<AiGeneratedTests> {
+  return await invoke<AiGeneratedTests>("ai_generate_tests", {
+    params,
+    requestYaml,
+    responseBody,
+    responseStatus,
+  });
+}
+
 // ── Updater / Rollback ──
 
 export async function listRollbackVersions(): Promise<string[]> {

@@ -20,6 +20,7 @@ mod websocket;
 
 use std::sync::{Arc, Mutex};
 
+use commands::ai::{ai_generate_request, ai_generate_tests};
 use commands::collection::{
     create_folder, create_request, delete_item, get_collection_defaults, open_collection,
     read_request_file, rename_item, create_sample_collection, save_folder_order,
@@ -290,6 +291,9 @@ pub fn run() {
             toggle_plugin,
             uninstall_plugin,
             install_plugin,
+            // AI commands
+            ai_generate_request,
+            ai_generate_tests,
             // Updater/rollback commands
             list_rollback_versions,
             backup_current_binary,

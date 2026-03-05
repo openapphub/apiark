@@ -298,6 +298,9 @@ export interface AppSettings {
   clientKeyPath: string | null;
   clientCertPassphrase: string | null;
   updateChannel: "stable" | "beta" | "nightly";
+  aiEndpoint: string | null;
+  aiApiKey: string | null;
+  aiModel: string | null;
 }
 
 // ── Tab Protocol ──

@@ -25,6 +25,9 @@ const defaultSettings: AppSettings = {
   clientKeyPath: null,
   clientCertPassphrase: null,
   updateChannel: "stable",
+  aiEndpoint: null,
+  aiApiKey: null,
+  aiModel: null,
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({

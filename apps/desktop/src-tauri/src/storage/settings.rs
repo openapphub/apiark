@@ -40,6 +40,15 @@ pub struct AppSettings {
     /// Update channel: "stable", "beta", or "nightly"
     #[serde(default = "default_update_channel")]
     pub update_channel: String,
+    /// AI assistant: OpenAI-compatible API endpoint
+    #[serde(default)]
+    pub ai_endpoint: Option<String>,
+    /// AI assistant: API key
+    #[serde(default)]
+    pub ai_api_key: Option<String>,
+    /// AI assistant: model name
+    #[serde(default)]
+    pub ai_model: Option<String>,
 }
 
 fn default_theme() -> String {
@@ -80,6 +89,9 @@ impl Default for AppSettings {
             client_key_path: None,
             client_cert_passphrase: None,
             update_channel: default_update_channel(),
+            ai_endpoint: None,
+            ai_api_key: None,
+            ai_model: None,
         }
     }
 }

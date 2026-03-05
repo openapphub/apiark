@@ -30,6 +30,7 @@ import { WelcomeScreen } from "@/components/onboarding/welcome-screen";
 import { GuidedTour } from "@/components/onboarding/guided-tour";
 import { ConsoleBottomBar } from "@/components/console/console-panel";
 import { useCollectionStore } from "@/stores/collection-store";
+import { AiAssistantDialog } from "@/components/ai/ai-assistant-dialog";
 import { AlertCircle, X, RefreshCw, FileX, GitMerge, Shield } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
@@ -48,6 +49,7 @@ function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [runnerOpen, setRunnerOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const urlBarRef = useRef<HTMLInputElement>(null);
   const envSelectorRef = useRef<HTMLSelectElement>(null);
@@ -149,6 +151,12 @@ function App() {
         case "k":
           e.preventDefault();
           setCommandPaletteOpen(true);
+          break;
+        case "a":
+          if (e.shiftKey) {
+            e.preventDefault();
+            setAiOpen(true);
+          }
           break;
         case "e":
           e.preventDefault();
@@ -274,6 +282,7 @@ function App() {
       />
       <CollectionRunnerDialog open={runnerOpen} onOpenChange={setRunnerOpen} />
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <AiAssistantDialog open={aiOpen} onOpenChange={setAiOpen} />
       <ResponseDiffDialog />
       <MockServerDialog />
       <MonitorDialog />

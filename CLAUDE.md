@@ -418,7 +418,7 @@ No tool currently delivers ALL of these simultaneously:
 
 ### Phase 4 — AI & Ecosystem (Year 2)
 
-- [ ] AI assistant (natural language -> requests, auto-test generation)
+- [x] AI assistant (natural language -> requests, auto-test generation)
 - [x] MCP server for AI editor integration
 - [ ] VS Code extension, JetBrains plugin
 - [x] GitHub Action, GitLab CI template

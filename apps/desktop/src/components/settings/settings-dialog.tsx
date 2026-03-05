@@ -222,6 +222,54 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               )}
             </section>
 
+            {/* AI Section */}
+            <section>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                AI Assistant
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm text-[var(--color-text-secondary)]">
+                    API Endpoint
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.aiEndpoint ?? ""}
+                    onChange={(e) => update({ aiEndpoint: e.target.value || null })}
+                    placeholder="https://api.openai.com/v1"
+                    className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-dimmed)]"
+                  />
+                  <p className="mt-0.5 text-xs text-[var(--color-text-dimmed)]">
+                    Any OpenAI-compatible endpoint (OpenAI, Ollama, LM Studio, etc.)
+                  </p>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-[var(--color-text-secondary)]">
+                    API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={settings.aiApiKey ?? ""}
+                    onChange={(e) => update({ aiApiKey: e.target.value || null })}
+                    placeholder="sk-..."
+                    className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-dimmed)]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-[var(--color-text-secondary)]">
+                    Model
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.aiModel ?? ""}
+                    onChange={(e) => update({ aiModel: e.target.value || null })}
+                    placeholder="gpt-4o-mini"
+                    className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-dimmed)]"
+                  />
+                </div>
+              </div>
+            </section>
+
             {/* Updates Section */}
             <UpdateSection settings={settings} update={update} />
 
