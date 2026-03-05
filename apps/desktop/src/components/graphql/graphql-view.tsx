@@ -113,9 +113,9 @@ export function GraphQLView() {
       {/* Split view */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Query editor */}
-        <div className="flex w-1/2 flex-col border-r border-[var(--color-border)]">
+        <div className="flex min-h-0 w-1/2 flex-col border-r border-[var(--color-border)]">
           {/* Tab bar */}
-          <div className="flex gap-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div className="flex shrink-0 gap-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
             {(["query", "variables", "headers", "auth"] as const).map((t) => (
               <button
                 key={t}
@@ -132,10 +132,10 @@ export function GraphQLView() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-auto p-3">
+          <div className="min-h-0 flex-1 overflow-auto p-3">
             {activeTab === "query" && (
-              <div className="flex h-full flex-col gap-2">
-                <div className="flex items-center justify-between">
+              <div className="flex min-h-0 h-full flex-col gap-2">
+                <div className="flex shrink-0 items-center justify-between">
                   <label className="text-xs font-medium text-[var(--color-text-secondary)]">
                     GraphQL Query
                   </label>
@@ -147,7 +147,7 @@ export function GraphQLView() {
                     className="rounded bg-[var(--color-elevated)] px-2 py-1 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none"
                   />
                 </div>
-                <div className="flex-1">
+                <div className="min-h-0 flex-1">
                   <CodeEditor
                     value={tab.graphql.query}
                     onChange={(v) => setGraphQLQuery(v)}
@@ -160,11 +160,11 @@ export function GraphQLView() {
             )}
 
             {activeTab === "variables" && (
-              <div className="flex h-full flex-col gap-2">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">
+              <div className="flex min-h-0 h-full flex-col gap-2">
+                <label className="shrink-0 text-xs font-medium text-[var(--color-text-secondary)]">
                   Variables (JSON)
                 </label>
-                <div className="flex-1">
+                <div className="min-h-0 flex-1">
                   <CodeEditor
                     value={tab.graphql.variables}
                     onChange={(v) => setGraphQLVariables(v)}
