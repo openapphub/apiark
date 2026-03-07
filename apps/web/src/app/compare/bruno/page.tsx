@@ -168,7 +168,7 @@ export default function CompareBrunoPage() {
               variants={fadeUp}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
             >
-              <span className="gradient-text">ApiArk vs Bruno</span>
+              <span className="text-indigo-400">ApiArk vs Bruno</span>
             </motion.h1>
 
             <motion.p

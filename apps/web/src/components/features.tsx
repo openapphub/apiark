@@ -1,206 +1,184 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import {
-  Zap,
-  Shield,
-  GitBranch,
-  Code,
-  Sparkles,
-  Puzzle,
-} from "lucide-react";
-import { useRef, type ComponentType, type SVGProps } from "react";
+import { useRef } from "react";
 
-interface Feature {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  title: string;
-  description: string;
-  accent: string;
-  accentGlow: string;
-}
-
-const features: Feature[] = [
+const features = [
   {
-    icon: Zap,
     title: "Native Speed",
-    description:
-      "50MB RAM. <2s startup. 20MB download. Tauri v2 + Rust backend means native performance, not Electron bloat.",
+    tag: "PERF",
     accent: "#06b6d4",
-    accentGlow: "rgba(6, 182, 212, 0.15)",
+    description: "50MB RAM. <2s startup. Tauri v2 + Rust — not Electron bloat.",
+    lines: [
+      { text: "$ apiark --version", color: "#a1a1aa" },
+      { text: "ApiArk v0.1.0 (Tauri v2, Rust)", color: "#22c55e" },
+      { text: "", color: "" },
+      { text: "$ ps aux | grep -i api", color: "#a1a1aa" },
+      { text: "  ApiArk .............. 48MB", color: "#06b6d4" },
+      { text: "  Postman ............. 812MB", color: "#ef4444" },
+      { text: "  Insomnia ............ 397MB", color: "#f97316" },
+    ],
   },
   {
-    icon: Shield,
     title: "Local-First Forever",
-    description:
-      "Your data never leaves your machine. No accounts. No cloud sync. No telemetry. Zero trust required.",
+    tag: "FS",
     accent: "#22c55e",
-    accentGlow: "rgba(34, 197, 94, 0.15)",
+    description: "Your data never leaves your machine. No login. No cloud. No telemetry.",
+    lines: [
+      { text: "~/my-api/", color: "#818cf8" },
+      { text: "  .apiark/", color: "#a1a1aa" },
+      { text: "    apiark.yaml", color: "#22c55e" },
+      { text: "    environments/", color: "#a1a1aa" },
+      { text: "      dev.yaml", color: "#34d399" },
+      { text: "      prod.yaml", color: "#34d399" },
+      { text: "  users/", color: "#a1a1aa" },
+      { text: "    get-all.yaml", color: "#fbbf24" },
+      { text: "    create.yaml", color: "#fbbf24" },
+      { text: "  .env  # gitignored", color: "#ef4444" },
+    ],
   },
   {
-    icon: GitBranch,
     title: "Git-Native Storage",
-    description:
-      "Collections stored as YAML files. One file per request. Fully diffable, mergeable, and versionable.",
+    tag: "DIFF",
     accent: "#8b5cf6",
-    accentGlow: "rgba(139, 92, 246, 0.15)",
+    description: "YAML files. One per request. Fully diffable, mergeable, versionable.",
+    lines: [
+      { text: "$ git diff users/create.yaml", color: "#a1a1aa" },
+      { text: "  name: Create User", color: "#71717a" },
+      { text: "- method: PUT", color: "#ef4444" },
+      { text: "+ method: POST", color: "#22c55e" },
+      { text: '  url: "{{baseUrl}}/api/users"', color: "#71717a" },
+      { text: "- body: {}", color: "#ef4444" },
+      { text: "+ body:", color: "#22c55e" },
+      { text: "+   type: json", color: "#22c55e" },
+      { text: "+   content: |", color: "#22c55e" },
+      { text: '+     {"name": "{{name}}"}', color: "#22c55e" },
+    ],
   },
   {
-    icon: Code,
     title: "TypeScript Scripting",
-    description:
-      "Pre/post request scripts in TypeScript. Full ark API with Chai assertions, CryptoJS, Lodash, Faker built-in.",
+    tag: "TS",
     accent: "#eab308",
-    accentGlow: "rgba(234, 179, 8, 0.15)",
+    description: "Pre/post scripts in TS. Chai assertions, CryptoJS, Lodash, Faker built-in.",
+    lines: [
+      { text: "// post-response script", color: "#6b7280" },
+      { text: 'ark.test("user created", () => {', color: "#e4e4e7" },
+      { text: "  const body = ark.response.json();", color: "#e4e4e7" },
+      { text: '  ark.expect(body).to.have.property("id");', color: "#e4e4e7" },
+      { text: "  ark.expect(body.role).to.eq('admin');", color: "#e4e4e7" },
+      { text: '  ark.env.set("userId", body.id);', color: "#fbbf24" },
+      { text: "});", color: "#e4e4e7" },
+      { text: "", color: "" },
+      { text: "// Result: PASS (12ms)", color: "#22c55e" },
+    ],
   },
   {
-    icon: Sparkles,
     title: "AI-Powered",
-    description:
-      "Generate requests from natural language. Auto-generate tests. Explain responses. Your API key, your model.",
+    tag: "AI",
     accent: "#ec4899",
-    accentGlow: "rgba(236, 72, 153, 0.15)",
+    description: "Generate requests from natural language. Auto-generate tests. Your API key.",
+    lines: [
+      { text: '> "Create a POST to register a user', color: "#ec4899" },
+      { text: '   with email validation"', color: "#ec4899" },
+      { text: "", color: "" },
+      { text: "Generated:", color: "#a1a1aa" },
+      { text: "  method: POST", color: "#818cf8" },
+      { text: '  url: "{{baseUrl}}/auth/register"', color: "#818cf8" },
+      { text: "  body: { email, password }", color: "#818cf8" },
+      { text: "  assert:", color: "#22c55e" },
+      { text: "    status: 201", color: "#22c55e" },
+      { text: "    body.token: { type: string }", color: "#22c55e" },
+    ],
   },
   {
-    icon: Puzzle,
     title: "Plugin Ecosystem",
-    description:
-      "Extend with JavaScript or WASM plugins. Custom auth handlers, transformers, and integrations.",
+    tag: "EXT",
     accent: "#f97316",
-    accentGlow: "rgba(249, 115, 22, 0.15)",
+    description: "Extend with JavaScript or WASM plugins. Custom auth, transformers, integrations.",
+    lines: [
+      { text: "// my-auth-plugin.js", color: "#6b7280" },
+      { text: "export default {", color: "#e4e4e7" },
+      { text: '  name: "custom-hmac-auth",', color: "#e4e4e7" },
+      { text: '  hook: "pre-request",', color: "#e4e4e7" },
+      { text: "  run(req) {", color: "#e4e4e7" },
+      { text: "    const sig = hmac(req.body);", color: "#fbbf24" },
+      { text: '    req.setHeader("X-Sig", sig);', color: "#fbbf24" },
+      { text: "  }", color: "#e4e4e7" },
+      { text: "};", color: "#e4e4e7" },
+    ],
   },
 ];
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 32,
-    filter: "blur(4px)",
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94] as const,
-    },
-  },
-};
-
-function FeatureCard({ feature }: { feature: Feature }) {
-  const Icon = feature.icon;
-
-  return (
-    <motion.div
-      variants={cardVariants}
-      className="card-shine group relative flex flex-col gap-4 rounded-2xl border border-[#1e1e2a] bg-[#14141c] p-6 transition-all duration-300 hover:border-[#2a2a3a]"
-      style={
-        {
-          "--accent": feature.accent,
-          "--accent-glow": feature.accentGlow,
-        } as React.CSSProperties
-      }
-      whileHover={{
-        boxShadow: `0 0 40px ${feature.accentGlow}, 0 0 80px ${feature.accentGlow}`,
-        borderColor: `color-mix(in srgb, ${feature.accent} 30%, #1e1e2a)`,
-      }}
-    >
-      {/* Accent gradient line at top */}
-      <div
-        className="absolute inset-x-0 top-0 h-px rounded-t-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${feature.accent}, transparent)`,
-        }}
-      />
-
-      {/* Icon container */}
-      <div
-        className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-300"
-        style={{
-          backgroundColor: feature.accentGlow,
-        }}
-      >
-        <Icon
-          className="h-5 w-5 transition-transform duration-300 group-hover:scale-110"
-          style={{ color: feature.accent }}
-        />
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-semibold tracking-tight text-[#e4e4e7]">
-          {feature.title}
-        </h3>
-        <p className="text-sm leading-relaxed text-[#a1a1aa]">
-          {feature.description}
-        </p>
-      </div>
-
-      {/* Subtle corner accent */}
-      <div
-        className="pointer-events-none absolute -right-px -top-px h-20 w-20 rounded-tr-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(circle at top right, ${feature.accentGlow}, transparent 70%)`,
-        }}
-      />
-    </motion.div>
-  );
-}
 
 export function Features() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section
-      id="features"
-      className="relative overflow-hidden px-6 py-32"
-    >
-      {/* Background gradient */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-[#6366f1]/[0.03] blur-[120px]" />
-      </div>
-
+    <section id="features" className="relative overflow-hidden px-6 py-32">
       <div className="relative mx-auto max-w-6xl">
-        {/* Section header */}
         <motion.div
           className="mb-16 text-center"
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl font-bold tracking-tight text-[#e4e4e7] sm:text-5xl">
+          <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Everything you need.{" "}
-            <span className="bg-gradient-to-r from-[#6366f1] via-[#818cf8] to-[#a78bfa] bg-clip-text text-transparent">
-              And nothing you don&apos;t.
-            </span>
+            <span className="text-zinc-500">Nothing you don&apos;t.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#71717a]">
-            A complete API development platform that respects your privacy, your
-            RAM, and your workflow.
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-500">
+            See every feature working inside the app.
           </p>
         </motion.div>
 
-        {/* Feature grid */}
         <motion.div
           ref={ref}
           className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.08 } },
+          }}
         >
           {features.map((feature) => (
-            <FeatureCard key={feature.title} feature={feature} />
+            <motion.div
+              key={feature.title}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+              }}
+              className="group flex flex-col gap-3 rounded-xl border border-[#1e1e2a] bg-[#0c0c14] p-4 transition-colors hover:border-[#2a2a3a]"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded font-mono"
+                  style={{
+                    color: feature.accent,
+                    background: `${feature.accent}12`,
+                  }}
+                >
+                  {feature.tag}
+                </span>
+                <h3 className="text-sm font-semibold text-zinc-200">
+                  {feature.title}
+                </h3>
+              </div>
+
+              {/* Mini terminal */}
+              <div className="rounded-md border border-[#1a1a24] bg-[#08080e] p-2.5 font-mono text-[10px] leading-relaxed">
+                {feature.lines.map((line, i) => (
+                  <div key={i} style={{ color: line.color || "transparent" }}>
+                    {line.text || "\u00A0"}
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs leading-relaxed text-zinc-500">
+                {feature.description}
+              </p>
+            </motion.div>
           ))}
         </motion.div>
       </div>

@@ -238,11 +238,7 @@ export default function Performance() {
       ref={sectionRef}
       className="relative overflow-hidden py-32 sm:py-40"
     >
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[800px] rounded-full bg-indigo-500/[0.04] blur-[120px]" />
-        <div className="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-red-500/[0.03] blur-[100px]" />
-      </div>
+      {/* Background */}
 
       <div className="relative mx-auto max-w-6xl px-6">
         {/* Header */}
@@ -253,8 +249,8 @@ export default function Performance() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
         >
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-            <span className="gradient-text-warm">10x lighter.</span>
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white">
+            10x lighter.
           </h2>
           <p className="mt-5 text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed">
             Same power. Fraction of the resources.
@@ -309,7 +305,7 @@ export default function Performance() {
               <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-b from-indigo-500/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
               <div className="relative">
-                <p className="text-5xl sm:text-6xl font-bold tracking-tight text-white glow-text">
+                <p className="text-5xl sm:text-6xl font-bold tracking-tight text-white">
                   <AnimatedCounter
                     value={stat.value}
                     prefix={stat.prefix}

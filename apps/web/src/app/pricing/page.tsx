@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, Download, Sparkles, Building2 } from "lucide-react";
+import { Check, ChevronDown, Download, Wrench, Building2 } from "lucide-react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -16,7 +16,7 @@ const tiers = [
     price: "$0",
     period: "forever",
     description: "Everything you need to build APIs",
-    cta: "Download Free",
+    cta: "Download",
     ctaHref: "/download",
     highlighted: false,
     badge: null,
@@ -40,11 +40,11 @@ const tiers = [
     price: "$8",
     period: "/user/month",
     description: "For power users who want more",
-    cta: "Start 14-day trial",
+    cta: "Coming Soon",
     ctaHref: "#",
     highlighted: true,
-    badge: "Popular",
-    icon: Sparkles,
+    badge: "Coming Soon",
+    icon: Wrench,
     features: [
       "Everything in Free, plus:",
       "Mock servers (unlimited, local)",
@@ -62,10 +62,10 @@ const tiers = [
     price: "$16",
     period: "/user/month",
     description: "For teams that collaborate",
-    cta: "Contact Sales",
-    ctaHref: "mailto:team@apiark.dev",
+    cta: "Coming Soon",
+    ctaHref: "#",
     highlighted: false,
-    badge: null,
+    badge: "Coming Soon",
     icon: Building2,
     features: [
       "Everything in Pro, plus:",
@@ -81,14 +81,14 @@ const tiers = [
 
 const faqs = [
   {
-    question: "Is the Free tier really free forever?",
+    question: "What's included in the Free tier?",
     answer:
-      "Yes. The Free tier includes the full HTTP client, all protocols, scripting, CLI, import/export, and more. There are no usage limits, no time limits, and no account required. We will never gate core API development features behind a paywall.",
+      "The Free tier includes the full HTTP client, all protocols, scripting, CLI, import/export, and more. There are no usage limits and no account required. Core API development features will always be free.",
   },
   {
-    question: "What happens when my Pro trial ends?",
+    question: "When will Pro and Team be available?",
     answer:
-      "After the 14-day trial, Pro features (mock servers, monitors, docs generation, response diff) are disabled. Your data stays exactly where it is -- on your filesystem. The core app continues to work with all Free features. There is a 14-day grace period after license expiry before Pro features are disabled.",
+      "Pro and Team tiers are currently in development. Right now, all features are available for free. When paid tiers launch, existing users will keep access to all core features. We'll announce availability on our GitHub and website.",
   },
   {
     question: "Can I use ApiArk offline?",
@@ -207,14 +207,13 @@ export default function PricingPage() {
               variants={fadeUp}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
             >
-              <span className="gradient-text">Simple, fair pricing.</span>
+              <span className="text-indigo-400">Simple, fair pricing.</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
               className="mt-5 text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto"
             >
-              Free forever for individuals. Pro for power users. Team for
-              organizations.
+              Everything is free right now. Pro and Team tiers are coming soon.
             </motion.p>
           </motion.div>
 
@@ -233,8 +232,8 @@ export default function PricingPage() {
                   key={tier.name}
                   variants={fadeUp}
                   className={`relative flex flex-col rounded-2xl border p-8 transition-all duration-300 ${
-                    tier.highlighted
-                      ? "border-indigo-500/40 bg-indigo-500/[0.06] shadow-xl shadow-indigo-500/10"
+                    tier.cta === "Coming Soon"
+                      ? "border-white/[0.04] bg-white/[0.01] opacity-60"
                       : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.1] hover:bg-white/[0.03]"
                   }`}
                 >
@@ -294,16 +293,18 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <a
-                    href={tier.ctaHref}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all ${
-                      tier.highlighted
-                        ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30"
-                        : "border border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white"
-                    }`}
-                  >
-                    {tier.cta}
-                  </a>
+                  {tier.cta === "Coming Soon" ? (
+                    <span className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold border border-white/[0.06] bg-white/[0.02] text-zinc-600 cursor-not-allowed">
+                      Coming Soon
+                    </span>
+                  ) : (
+                    <a
+                      href={tier.ctaHref}
+                      className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold border border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white transition-all"
+                    >
+                      {tier.cta}
+                    </a>
+                  )}
                 </motion.div>
               );
             })}

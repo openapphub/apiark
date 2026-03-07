@@ -16,7 +16,7 @@ export default function HoppscotchComparison() {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-extrabold mb-6"
           >
-            <span className="gradient-text">ApiArk vs Hoppscotch</span>
+            <span className="text-indigo-400">ApiArk vs Hoppscotch</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

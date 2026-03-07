@@ -1,285 +1,233 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import {
-  Globe,
-  Hexagon,
-  Radio,
-  MessageSquare,
-  Rss,
-  Wifi,
-} from "lucide-react";
-import { useRef, type ComponentType, type SVGProps } from "react";
+import { useRef, useState } from "react";
 
-interface Protocol {
-  name: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  color: string;
-  colorGlow: string;
-  description: string;
-  preview: string;
-}
-
-const protocols: Protocol[] = [
+const protocols = [
   {
     name: "REST",
-    icon: Globe,
     color: "#22c55e",
-    colorGlow: "rgba(34, 197, 94, 0.12)",
-    description:
-      "Full HTTP client with all methods, headers, params, auth, and body types.",
-    preview: `GET /api/users?page=1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-200 OK  245ms  1.2KB`,
+    method: "GET",
+    url: "/api/users",
+    description: "Full HTTP client with every method, headers, params, auth, cookies, and body type. Color-coded methods. cURL import/export.",
+    response: `{
+  "users": [
+    { "id": 1, "name": "Sarah Chen", "role": "admin" },
+    { "id": 2, "name": "Marcus J.", "role": "dev" }
+  ],
+  "total": 2
+}`,
+    status: "200 OK",
+    time: "45ms",
   },
   {
     name: "GraphQL",
-    icon: Hexagon,
     color: "#ec4899",
-    colorGlow: "rgba(236, 72, 153, 0.12)",
-    description:
-      "Schema introspection, auto-complete, variables editor, and schema explorer.",
-    preview: `query GetUser($id: ID!) {
-  user(id: $id) {
-    name
-    email
-    role
+    method: "GQL",
+    url: "/graphql",
+    description: "Schema introspection, auto-complete, variables editor, and schema explorer. Write queries with full IDE support.",
+    response: `{
+  "data": {
+    "user": {
+      "name": "Sarah Chen",
+      "orders": [
+        { "id": "ord_9x2k", "total": 149.99 }
+      ]
+    }
   }
 }`,
+    status: "200 OK",
+    time: "89ms",
   },
   {
     name: "gRPC",
-    icon: Radio,
     color: "#3b82f6",
-    colorGlow: "rgba(59, 130, 246, 0.12)",
-    description:
-      "Proto file loading, server reflection, unary, streaming, and all call types.",
-    preview: `service UserService {
-  rpc GetUser (UserReq)
-    returns (UserRes);
-  rpc ListUsers (Empty)
-    returns (stream UserRes);
+    method: "RPC",
+    url: "grpc://api:50051",
+    description: "Load .proto files or use server reflection. Unary, server streaming, client streaming, and bidirectional calls.",
+    response: `{
+  "user": {
+    "user_id": "usr_k8x2m",
+    "display_name": "Sarah Chen",
+    "role": "ADMIN",
+    "is_active": true
+  }
 }`,
+    status: "OK (0)",
+    time: "12ms",
   },
   {
     name: "WebSocket",
-    icon: MessageSquare,
     color: "#eab308",
-    colorGlow: "rgba(234, 179, 8, 0.12)",
-    description:
-      "Real-time bidirectional messaging with auto-reconnect and message history.",
-    preview: `ws://localhost:8080/ws
-> {"type": "subscribe",
-   "channel": "updates"}
-< {"type": "ack",
-   "status": "subscribed"}`,
+    method: "WS",
+    url: "wss://api/ws",
+    description: "Real-time bidirectional messaging with auto-reconnect, message history, and formatted message viewer.",
+    response: `▶ {"type":"msg","user":"Sarah","text":"Hey!"}
+▶ {"type":"msg","user":"Marcus","text":"Hi"}
+◀ {"type":"msg","text":"Confirmed"}
+▶ {"type":"msg","user":"Marcus","text":"Ship it"}`,
+    status: "Connected",
+    time: "Live",
   },
   {
     name: "SSE",
-    icon: Rss,
     color: "#06b6d4",
-    colorGlow: "rgba(6, 182, 212, 0.12)",
-    description:
-      "Server-Sent Events with real-time stream viewer and event type filtering.",
-    preview: `GET /events
-Accept: text/event-stream
+    method: "SSE",
+    url: "/events/stream",
+    description: "Server-Sent Events with real-time stream viewer, event type filtering, and auto-reconnect.",
+    response: `event: update
+data: {"cpu": 45.2, "memory": 62.1}
 
-event: message
-data: {"id": 1, "update":
-  "deployment complete"}`,
+event: update
+data: {"cpu": 43.8, "memory": 61.9}
+
+event: alert
+data: {"level": "warn", "msg": "High load"}`,
+    status: "Streaming",
+    time: "Live",
   },
   {
     name: "MQTT",
-    icon: Wifi,
     color: "#8b5cf6",
-    colorGlow: "rgba(139, 92, 246, 0.12)",
-    description:
-      "Publish/subscribe messaging with topic management and QoS levels.",
-    preview: `mqtt://broker:1883
-Topic: devices/sensor-01
+    method: "PUB",
+    url: "mqtt://broker:1883",
+    description: "Publish/subscribe messaging with topic management, QoS levels, and retained message support.",
+    response: `Topic: sensors/temp/living-room
 QoS: 1
+Payload: {"temp": 22.5, "unit": "C"}
 
-{"temp": 22.5,
- "humidity": 65}`,
+Topic: sensors/temp/bedroom
+QoS: 1
+Payload: {"temp": 20.1, "unit": "C"}`,
+    status: "Subscribed",
+    time: "Live",
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    scale: 0.96,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.55,
-      ease: [0.25, 0.46, 0.45, 0.94] as const,
-    },
-  },
-};
-
-function ProtocolCard({ protocol }: { protocol: Protocol }) {
-  const Icon = protocol.icon;
-
+function MiniAppWindow({ protocol }: { protocol: typeof protocols[0] }) {
   return (
-    <motion.div
-      variants={cardVariants}
-      className="group relative flex min-w-[300px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[#1e1e2a] bg-[#14141c] transition-all duration-300 hover:border-[#2a2a3a] lg:min-w-0"
-      whileHover={{
-        boxShadow: `0 0 40px ${protocol.colorGlow}, 0 8px 32px rgba(0, 0, 0, 0.4)`,
-        borderColor: `color-mix(in srgb, ${protocol.color} 25%, #1e1e2a)`,
-      }}
-    >
-      {/* Top accent border */}
-      <div
-        className="h-px w-full"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${protocol.color}, transparent)`,
-        }}
-      />
+    <div className="rounded-lg border border-[#1e1e2a] bg-[#0d0d14] overflow-hidden">
+      {/* Title bar */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0a0a10] border-b border-[#1a1a24]">
+        <div className="w-2 h-2 rounded-full bg-[#ef4444]" />
+        <div className="w-2 h-2 rounded-full bg-[#eab308]" />
+        <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
+        <span className="ml-2 text-[9px] text-zinc-600">ApiArk</span>
+      </div>
 
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 pt-6">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110"
-          style={{ backgroundColor: protocol.colorGlow }}
+      {/* URL bar */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-[#1a1a24]">
+        <span
+          className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+          style={{ color: protocol.color, background: `${protocol.color}15` }}
         >
-          <Icon className="h-4.5 w-4.5" style={{ color: protocol.color }} />
-        </div>
-        <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold tracking-tight text-[#e4e4e7]">
-            {protocol.name}
-          </h3>
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: protocol.color }}
-          />
+          {protocol.method}
+        </span>
+        <span className="text-[10px] text-zinc-500 font-mono truncate">{protocol.url}</span>
+        <div className="ml-auto flex items-center gap-1.5">
+          <span className="text-[9px] font-bold" style={{ color: "#22c55e" }}>
+            {protocol.status}
+          </span>
+          <span className="text-[9px] text-zinc-600">{protocol.time}</span>
         </div>
       </div>
 
-      {/* Description */}
-      <p className="px-6 pt-3 text-sm leading-relaxed text-[#a1a1aa]">
-        {protocol.description}
-      </p>
-
-      {/* Code preview */}
-      <div className="mt-4 px-4 pb-4">
-        <div className="relative overflow-hidden rounded-xl border border-[#1a1a24] bg-[#0c0c14] p-4">
-          {/* Decorative terminal dots */}
-          <div className="mb-3 flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-[#2a2a3a]" />
-            <div className="h-2 w-2 rounded-full bg-[#2a2a3a]" />
-            <div className="h-2 w-2 rounded-full bg-[#2a2a3a]" />
+      {/* Response */}
+      <div className="p-3 font-mono text-[9px] leading-relaxed text-zinc-400 h-36 overflow-hidden">
+        {protocol.response.split("\n").map((line, i) => (
+          <div key={i}>
+            <span className="text-zinc-700 select-none mr-2">{i + 1}</span>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: line
+                  .replace(/"([^"]+)":/g, '<span style="color:#818cf8">"$1"</span>:')
+                  .replace(/: "([^"]+)"/g, ': <span style="color:#34d399">"$1"</span>')
+                  .replace(/: (\d+\.?\d*)/g, ': <span style="color:#fbbf24">$1</span>')
+                  .replace(/: (true|false)/g, ': <span style="color:#f472b6">$1</span>')
+                  .replace(/(▶|◀)/g, '<span style="color:#6366f1">$1</span>')
+                  .replace(/(event|data|Topic|QoS|Payload):/g, '<span style="color:#818cf8">$1</span>:'),
+              }}
+            />
           </div>
-
-          <pre className="overflow-hidden text-xs leading-relaxed">
-            <code className="text-[#71717a]">{protocol.preview}</code>
-          </pre>
-
-          {/* Glow overlay on hover */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            style={{
-              background: `radial-gradient(ellipse at bottom, ${protocol.colorGlow}, transparent 70%)`,
-            }}
-          />
-        </div>
+        ))}
       </div>
-
-      {/* Corner glow on hover */}
-      <div
-        className="pointer-events-none absolute -left-px -top-px h-24 w-24 rounded-tl-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(circle at top left, ${protocol.colorGlow}, transparent 70%)`,
-        }}
-      />
-    </motion.div>
+    </div>
   );
 }
 
 export function Protocols() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const [active, setActive] = useState(0);
 
   return (
-    <section
-      id="protocols"
-      className="relative overflow-hidden px-6 py-32"
-    >
-      {/* Background gradient */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute bottom-0 left-1/4 h-[500px] w-[600px] rounded-full bg-[#8b5cf6]/[0.03] blur-[120px]" />
-        <div className="absolute right-1/4 top-0 h-[500px] w-[600px] rounded-full bg-[#3b82f6]/[0.03] blur-[120px]" />
-      </div>
-
-      <div className="relative mx-auto max-w-6xl">
-        {/* Section header */}
+    <section ref={ref} id="protocols" className="relative py-32 overflow-hidden">
+      <div className="mx-auto max-w-6xl px-6">
         <motion.div
-          className="mb-16 text-center"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold tracking-tight text-[#e4e4e7] sm:text-5xl">
-            Every protocol.{" "}
-            <span className="bg-gradient-to-r from-[#6366f1] via-[#818cf8] to-[#a78bfa] bg-clip-text text-transparent">
-              One unified interface.
-            </span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Every protocol. <span className="text-indigo-400">One interface.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#71717a]">
-            REST, GraphQL, gRPC, WebSocket, SSE, and MQTT in the same app. No
-            tab-switching between tools.
+          <p className="text-lg text-zinc-500 max-w-xl mx-auto">
+            REST, GraphQL, gRPC, WebSocket, SSE, MQTT &mdash; all with the same experience.
           </p>
         </motion.div>
 
-        {/* Protocol cards - horizontal scroll on mobile, grid on desktop */}
-        <motion.div
-          ref={ref}
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-        >
-          {/* Mobile: horizontal scroll */}
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none lg:hidden">
-            {protocols.map((protocol) => (
-              <ProtocolCard key={protocol.name} protocol={protocol} />
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Left: Protocol list */}
+          <div className="space-y-2">
+            {protocols.map((proto, i) => (
+              <motion.button
+                key={proto.name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: i * 0.06, duration: 0.4 }}
+                onClick={() => setActive(i)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  i === active
+                    ? "bg-white/[0.03] border-white/10"
+                    : "bg-transparent border-transparent hover:bg-white/[0.02]"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-1">
+                  <span
+                    className="text-xs font-bold px-2 py-0.5 rounded"
+                    style={{ color: proto.color, background: `${proto.color}15` }}
+                  >
+                    {proto.method}
+                  </span>
+                  <span className={`font-medium ${i === active ? "text-white" : "text-zinc-400"}`}>
+                    {proto.name}
+                  </span>
+                  <span className="ml-auto text-[10px] text-zinc-600 font-mono">{proto.url}</span>
+                </div>
+                {i === active && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="text-sm text-zinc-500 mt-2 leading-relaxed"
+                  >
+                    {proto.description}
+                  </motion.p>
+                )}
+              </motion.button>
             ))}
           </div>
 
-          {/* Desktop: 3-column grid */}
-          <div className="hidden grid-cols-3 gap-4 lg:grid">
-            {protocols.map((protocol) => (
-              <ProtocolCard key={protocol.name} protocol={protocol} />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Bottom tagline */}
-        <motion.p
-          className="mt-12 text-center text-sm text-[#52525b]"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          All protocols share the same scripting engine, environment variables,
-          and collection structure.
-        </motion.p>
+          {/* Right: Mini app window */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="sticky top-32"
+          >
+            <MiniAppWindow protocol={protocols[active]} />
+          </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     "local-first",
     "open source",
   ],
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "ApiArk — No Login. No Cloud. No Bloat.",
     description:

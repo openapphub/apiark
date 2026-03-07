@@ -167,7 +167,7 @@ export default function DownloadPage() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-5xl md:text-6xl font-extrabold mb-6">
-              <span className="gradient-text">Download ApiArk</span>
+              <span className="text-indigo-400">Download ApiArk</span>
             </h1>
             <p className="text-xl text-[var(--color-text-secondary)] max-w-xl mx-auto mb-4">
               Free, open-source, and available for every platform.

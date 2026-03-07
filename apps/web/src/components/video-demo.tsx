@@ -12,10 +12,6 @@ export function VideoDemo() {
 
   return (
     <section ref={ref} className="relative py-32 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.08),transparent_70%)]" />
-      </div>
 
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
@@ -24,8 +20,8 @@ export function VideoDemo() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4">
-            <span className="gradient-text">See it in action.</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            See it in action.
           </h2>
           <p className="text-lg text-[var(--color-text-secondary)] max-w-xl mx-auto">
             12 seconds. That&apos;s all it takes to see why developers are switching.
@@ -36,7 +32,7 @@ export function VideoDemo() {
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative rounded-2xl overflow-hidden border border-[var(--color-border)] glow-indigo"
+          className="relative rounded-2xl overflow-hidden border border-[var(--color-border)]"
         >
           {/* Gradient border top */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent)] to-transparent" />
