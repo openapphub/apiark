@@ -1,6 +1,6 @@
 {
   "name": "@apiark/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ApiArk CLI — run collections, import/export API specs from the command line",
   "keywords": ["api", "rest", "cli", "testing", "postman", "apiark"],
   "license": "MIT",

@@ -2,7 +2,7 @@
   "name": "apiark-vscode",
   "displayName": "ApiArk",
   "description": "ApiArk integration for VS Code — browse collections, send requests, and run tests",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "apiark",
   "license": "MIT",
   "engines": {
