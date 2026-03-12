@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { useEnvironmentStore } from "@/stores/environment-store";
 import { useCollectionStore } from "@/stores/collection-store";
 import { useMockStore } from "@/stores/mock-store";
@@ -13,6 +15,8 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
+  const [appVersion, setAppVersion] = useState("");
+  useEffect(() => { getVersion().then(setAppVersion); }, []);
   const activeEnv = useEnvironmentStore((s) => s.activeEnvironmentName);
   const collections = useCollectionStore((s) => s.collections);
   const mockServers = useMockStore((s) => s.servers);
@@ -121,7 +125,7 @@ export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
           )}
         </button>
 
-        <span className="text-[var(--color-text-dimmed)]">ApiArk v0.1.0</span>
+        <span className="text-[var(--color-text-dimmed)]">ApiArk v{appVersion}</span>
       </div>
     </div>
   );
