@@ -95,11 +95,12 @@ const PLATFORM_CONFIG = {
     color: "from-amber-400 to-orange-300",
     description: "Ubuntu, Fedora, Arch, and more",
     files: [
-      { pattern: "amd64.AppImage", label: ".AppImage (Universal)", primary: true },
+      { pattern: "amd64.AppImage", label: ".AppImage (Recommended)", primary: true },
       { pattern: "amd64.deb", label: ".deb (Ubuntu/Debian)", primary: false },
       { pattern: "x86_64.rpm", label: ".rpm (Fedora/RHEL)", primary: false },
     ],
     cli: { pattern: "cli-linux-x86_64", label: "apiark CLI (x86_64)" },
+    note: "AppImage supports automatic updates. For .deb/.rpm, you'll need to download new versions manually.",
     installSteps: [
       "AppImage: chmod +x ApiArk.AppImage && ./ApiArk.AppImage",
       "Debian/Ubuntu: sudo dpkg -i apiark.deb",
@@ -365,6 +366,15 @@ export default function DownloadPage() {
                 })}
               </div>
 
+              {/* Note (e.g. auto-update info for Linux) */}
+              {"note" in PLATFORM_CONFIG[platform] && (PLATFORM_CONFIG[platform] as { note?: string }).note && (
+                <div className="mb-4 rounded-lg bg-amber-500/5 border border-amber-500/15 px-4 py-3">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    {(PLATFORM_CONFIG[platform] as { note: string }).note}
+                  </p>
+                </div>
+              )}
+
               {/* Installation instructions */}
               <div className="border-t border-[var(--color-border)] pt-4">
                 <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
@@ -491,6 +501,15 @@ export default function DownloadPage() {
                           );
                         })()}
                       </div>
+
+                      {/* Note */}
+                      {"note" in config && (config as { note?: string }).note && (
+                        <div className="mb-4 rounded-lg bg-amber-500/5 border border-amber-500/15 px-3 py-2">
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            {(config as { note: string }).note}
+                          </p>
+                        </div>
+                      )}
 
                       {/* Install instructions */}
                       <div className="border-t border-[var(--color-border)] pt-3">
