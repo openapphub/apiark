@@ -148,24 +148,48 @@ jobs:
             const target = '${{ matrix.target }}';
             const bundleDir = `apps/desktop/src-tauri/target/${target}/release/bundle`;
 
-            // Find all .sig and .tar.gz files recursively
-            function findFiles(dir, pattern) {
+            function findFiles(dir) {
               const results = [];
               if (!fs.existsSync(dir)) return results;
               for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
                 const full = path.join(dir, entry.name);
-                if (entry.isDirectory()) results.push(...findFiles(full, pattern));
-                else if (pattern.test(entry.name)) results.push(full);
+                if (entry.isDirectory()) results.push(...findFiles(full));
+                else results.push(full);
               }
               return results;
             }
 
-            // Upload .tar.gz updater bundles and their .sig files
-            const files = findFiles(bundleDir, /\.(sig|tar\.gz)$/);
-            for (const file of files) {
-              const name = path.basename(file);
-              // Skip duplicates with different casing (api-ark vs ApiArk)
-              if (name.startsWith('api-ark')) continue;
+            const allFiles = findFiles(bundleDir);
+            console.log('All bundle files:', allFiles.map(f => path.basename(f)));
+
+            // Determine arch suffix for macOS sig renaming
+            const archSuffix = target.includes('aarch64') ? '_aarch64' : '_x64';
+
+            const updaterFiles = allFiles.filter(f => {
+              const name = path.basename(f);
+              if (name.startsWith('api-ark')) return false;
+              if (name.endsWith('.sig')) return true;
+              if (name.endsWith('.AppImage.tar.gz')) return true;
+              if (name.endsWith('.app.tar.gz')) return true;
+              if (name.endsWith('.nsis.zip')) return true;
+              if (name.endsWith('.msi.zip')) return true;
+              return false;
+            });
+
+            console.log('Updater files to upload:', updaterFiles.map(f => path.basename(f)));
+
+            for (const file of updaterFiles) {
+              let name = path.basename(file);
+
+              // Rename macOS sigs to match uploaded asset names
+              // Build produces: ApiArk.app.tar.gz.sig
+              // tauri-action uploads as: ApiArk_aarch64.app.tar.gz / ApiArk_x64.app.tar.gz
+              if (name === 'ApiArk.app.tar.gz.sig') {
+                name = `ApiArk${archSuffix}.app.tar.gz.sig`;
+              } else if (name === 'ApiArk.app.tar.gz') {
+                name = `ApiArk${archSuffix}.app.tar.gz`;
+              }
+
               console.log(`Uploading: ${name}`);
               try {
                 await github.rest.repos.uploadReleaseAsset({
@@ -176,7 +200,6 @@ jobs:
                   data: fs.readFileSync(file),
                 });
               } catch (e) {
-                // Asset may already exist if tauri-action uploaded it
                 if (e.status === 422) console.log(`  Already exists, skipping`);
                 else throw e;
               }
@@ -292,43 +315,57 @@ jobs:
 
             const platforms = {};
 
+            // Log all assets for debugging
+            console.log('All release assets:', assets.map(a => a.name));
+
             // Linux - AppImage.tar.gz
             const linuxTarGz = assets.find(a => a.name.endsWith('.AppImage.tar.gz'));
-            const linuxSig = linuxTarGz ? await getSigContent(linuxTarGz.name + '.sig') : null;
+            const linuxSig = await getSigContent(linuxTarGz?.name + '.sig');
             if (linuxTarGz && linuxSig) {
               platforms['linux-x86_64'] = {
                 signature: linuxSig,
                 url: linuxTarGz.browser_download_url,
               };
+            } else {
+              console.log(`Linux: bundle=${linuxTarGz?.name}, sig=${linuxSig ? 'found' : 'missing'}`);
             }
 
-            // macOS - app.tar.gz
+            // macOS ARM - app.tar.gz
             const macArmTarGz = assets.find(a => a.name.includes('aarch64') && a.name.endsWith('.app.tar.gz'));
-            const macArmSig = macArmTarGz ? await getSigContent(macArmTarGz.name + '.sig') : null;
+            const macArmSig = await getSigContent(macArmTarGz?.name + '.sig');
             if (macArmTarGz && macArmSig) {
               platforms['darwin-aarch64'] = {
                 signature: macArmSig,
                 url: macArmTarGz.browser_download_url,
               };
+            } else {
+              console.log(`macOS ARM: bundle=${macArmTarGz?.name}, sig=${macArmSig ? 'found' : 'missing'}`);
             }
 
+            // macOS x64 - app.tar.gz
             const macX64TarGz = assets.find(a => a.name.includes('x64') && a.name.endsWith('.app.tar.gz'));
-            const macX64Sig = macX64TarGz ? await getSigContent(macX64TarGz.name + '.sig') : null;
+            const macX64Sig = await getSigContent(macX64TarGz?.name + '.sig');
             if (macX64TarGz && macX64Sig) {
               platforms['darwin-x86_64'] = {
                 signature: macX64Sig,
                 url: macX64TarGz.browser_download_url,
               };
+            } else {
+              console.log(`macOS x64: bundle=${macX64TarGz?.name}, sig=${macX64Sig ? 'found' : 'missing'}`);
             }
 
-            // Windows - NSIS setup.exe
+            // Windows - NSIS .nsis.zip (preferred) or setup.exe
+            const winNsis = assets.find(a => a.name.endsWith('.nsis.zip'));
             const winSetup = assets.find(a => a.name.endsWith('-setup.exe'));
-            const winSig = winSetup ? await getSigContent(winSetup.name + '.sig') : null;
-            if (winSetup && winSig) {
+            const winBundle = winNsis || winSetup;
+            const winSig = await getSigContent(winBundle?.name + '.sig');
+            if (winBundle && winSig) {
               platforms['windows-x86_64'] = {
                 signature: winSig,
-                url: winSetup.browser_download_url,
+                url: winBundle.browser_download_url,
               };
+            } else {
+              console.log(`Windows: nsis=${winNsis?.name}, setup=${winSetup?.name}, sig=${winSig ? 'found' : 'missing'}`);
             }
 
             const latestJson = {

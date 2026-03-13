@@ -13,14 +13,42 @@
 </p>
 
 <p align="center">
+  <em>Postman uses 800 MB of RAM. ApiArk uses 60 MB.</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/berbicanes/apiark/releases/latest"><img src="https://img.shields.io/github/v/release/berbicanes/apiark?style=flat-square&color=6366f1" alt="Latest Release" /></a>
+  <a href="https://github.com/berbicanes/apiark/releases/latest"><img src="https://img.shields.io/github/downloads/berbicanes/apiark/total?style=flat-square&color=22c55e" alt="Downloads" /></a>
+  <a href="https://github.com/berbicanes/apiark/stargazers"><img src="https://img.shields.io/github/stars/berbicanes/apiark?style=flat-square&color=eab308" alt="Stars" /></a>
+  <a href="https://github.com/berbicanes/apiark/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/berbicanes/apiark/ci.yml?style=flat-square&label=CI" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/berbicanes/apiark?style=flat-square" alt="MIT License" /></a>
+</p>
+
+<p align="center">
+  <a href="#download">Download</a> &bull;
   <a href="#features">Features</a> &bull;
-  <a href="#performance">Performance</a> &bull;
-  <a href="#installation">Installation</a> &bull;
   <a href="#switching-from-postman">Switching from Postman</a> &bull;
+  <a href="#performance">Performance</a> &bull;
+  <a href="#community">Community</a> &bull;
   <a href="#development">Development</a>
 </p>
 
+<p align="center">
+  <a href="#translations">English</a> &bull;
+  <a href="#translations">Espa&#241;ol</a> &bull;
+  <a href="#translations">Fran&#231;ais</a> &bull;
+  <a href="#translations">Deutsch</a> &bull;
+  <a href="#translations">Portugu&#234;s</a> &bull;
+  <a href="#translations">&#20013;&#25991;</a> &bull;
+  <a href="#translations">&#26085;&#26412;&#35486;</a> &bull;
+  <a href="#translations">&#54620;&#44397;&#50612;</a> &bull;
+  <a href="#translations">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</a>
+</p>
+
 ---
+
+<!-- TODO: Add hero screenshot/GIF here -->
+<!-- <p align="center"><img src="docs/hero.gif" alt="ApiArk Demo" width="800" /></p> -->
 
 ## Why ApiArk?
 
@@ -33,23 +61,82 @@
 | **Data Storage** | Cloud | Filesystem | IndexedDB | **Filesystem (YAML)** |
 | **Git-Friendly** | No | Yes (.bru) | No | **Yes (standard YAML)** |
 | **gRPC** | Yes | Yes | No | **Yes** |
+| **WebSocket** | Yes | No | Yes | **Yes** |
+| **SSE** | Yes | No | Yes | **Yes** |
+| **MQTT** | No | No | No | **Yes** |
 | **Mock Servers** | Cloud only | No | No | **Local** |
 | **Monitors** | Cloud only | No | No | **Local** |
 | **Plugin System** | No | No | No | **JS + WASM** |
+| **Proxy Capture** | No | No | No | **Yes** |
+| **Response Diff** | No | No | No | **Yes** |
+
+## Download
+
+**[Latest Release](https://github.com/berbicanes/apiark/releases/latest)**
+
+| Platform | Download |
+|----------|----------|
+| **Windows** | [`.exe` installer](https://github.com/berbicanes/apiark/releases/latest) &bull; [`.msi`](https://github.com/berbicanes/apiark/releases/latest) |
+| **macOS** | [Apple Silicon `.dmg`](https://github.com/berbicanes/apiark/releases/latest) &bull; [Intel `.dmg`](https://github.com/berbicanes/apiark/releases/latest) |
+| **Linux** | [`.AppImage`](https://github.com/berbicanes/apiark/releases/latest) &bull; [`.deb`](https://github.com/berbicanes/apiark/releases/latest) &bull; [`.rpm`](https://github.com/berbicanes/apiark/releases/latest) |
+
+<details>
+<summary><strong>Package managers</strong></summary>
+
+```bash
+# Homebrew (macOS/Linux) — coming soon
+brew install --cask apiark
+
+# Chocolatey (Windows) — coming soon
+choco install apiark
+
+# Snap (Linux) — coming soon
+sudo snap install apiark
+
+# AUR (Arch Linux) — coming soon
+yay -S apiark-bin
+```
+
+Interested in maintaining a package? [Open an issue](https://github.com/berbicanes/apiark/issues/new) and we'll work with you.
+</details>
+
+<details>
+<summary><strong>Build from source</strong></summary>
+
+**Prerequisites:** Node.js 22+, pnpm 10+, Rust toolchain, [Tauri v2 system deps](https://v2.tauri.app/start/prerequisites/)
+
+```bash
+git clone https://github.com/berbicanes/apiark.git
+cd apiark
+pnpm install
+pnpm tauri build
+```
+</details>
+
+## Switching from Postman
+
+1. Export your Postman collection (Collection v2.1 JSON)
+2. Open ApiArk
+3. `Ctrl+K` > "Import Collection" > select your file
+4. Done. Your requests are now YAML files you own.
+
+Also imports from: **Insomnia**, **Bruno**, **Hoppscotch**, **OpenAPI 3.x**, **HAR**, **cURL**.
 
 ## Features
 
-**Multi-Protocol** — REST, GraphQL, gRPC, WebSocket, SSE, MQTT, Socket.IO in one app.
+**Multi-Protocol** — REST, GraphQL, gRPC, WebSocket, SSE, MQTT, Socket.IO in one app. No tool has broader protocol coverage.
 
 **Local-First Storage** — Every request is a `.yaml` file. Collections are directories. Everything is git-diffable. No proprietary formats.
+
+**Dark Mode + Themes** — Dark, Light, Black/OLED themes with 8 accent colors.
 
 **TypeScript Scripting** — Pre/post-request scripts with full type definitions. `ark.test()`, `ark.expect()`, `ark.env.set()`.
 
 **Collection Runner** — Run entire collections with data-driven testing (CSV/JSON), configurable iterations, JUnit/HTML reports.
 
-**Local Mock Servers** — Create mock APIs from your collections. Faker.js data, latency simulation, error injection.
+**Local Mock Servers** — Create mock APIs from your collections. Faker.js data, latency simulation, error injection. No cloud, no usage limits.
 
-**Scheduled Monitoring** — Cron-based automated testing with desktop notifications and webhook alerts.
+**Scheduled Monitoring** — Cron-based automated testing with desktop notifications and webhook alerts. Runs locally, not on someone else's server.
 
 **API Docs Generation** — Generate HTML + Markdown documentation from your collections.
 
@@ -65,10 +152,6 @@
 
 **Import Everything** — Postman, Insomnia, Bruno, Hoppscotch, OpenAPI, HAR, cURL. One-click migration.
 
-**Dark Mode + Themes** — Dark, Light, Black/OLED themes. 8 accent colors. Your app, your look.
-
-**Zen Mode** — Hide all chrome with `Ctrl+.` for focused API debugging.
-
 ## Performance
 
 Built with Tauri v2 (Rust backend + native OS webview), not Electron.
@@ -79,45 +162,6 @@ Built with Tauri v2 (Rust backend + native OS webview), not Electron.
 | RAM at idle | ~60 MB |
 | Cold startup | <2s |
 | Request send latency | <10ms overhead |
-
-## Installation
-
-### Download
-
-> Coming soon — pre-built binaries for macOS, Windows, and Linux.
-
-### Build from Source
-
-**Prerequisites:** Node.js 22+, pnpm 10+, Rust toolchain, [Tauri v2 system deps](https://v2.tauri.app/start/prerequisites/)
-
-```bash
-git clone https://github.com/berbicanes/apiark.git
-cd apiark
-pnpm install
-pnpm tauri build
-```
-
-## Switching from Postman
-
-1. Export your Postman collection (Collection v2.1 JSON)
-2. Open ApiArk
-3. `Ctrl+K` > "Import Collection" > select your file
-4. Done. Your requests are now YAML files you own.
-
-ApiArk imports from: **Postman**, **Insomnia**, **Bruno**, **Hoppscotch**, **OpenAPI 3.x**, **HAR**, **cURL**.
-
-## CLI
-
-```bash
-# Run a collection
-apiark run ./my-collection --env production
-
-# With data-driven testing
-apiark run ./my-collection --data users.csv --reporter junit
-
-# Import a Postman collection
-apiark import postman-export.json
-```
 
 ## Data Format
 
@@ -156,9 +200,35 @@ tests: |
   });
 ```
 
+## CLI
+
+```bash
+# Run a collection
+apiark run ./my-collection --env production
+
+# With data-driven testing
+apiark run ./my-collection --data users.csv --reporter junit
+
+# Import a Postman collection
+apiark import postman-export.json
+```
+
 ## No Lock-In Pledge
 
 > If you decide to leave ApiArk, your data leaves with you. Every file is a standard format. Every database is open. We will never make it hard to switch away.
+
+## Community
+
+- [Discord](https://discord.gg/apiark) — Chat, ask questions, share feedback
+- [Twitter / X](https://x.com/apiabordes) — Updates and announcements
+- [GitHub Discussions](https://github.com/berbicanes/apiark/discussions) — Ideas, Q&A, show & tell
+- [GitHub Issues](https://github.com/berbicanes/apiark/issues) — Bug reports and feature requests
+
+## Translations
+
+ApiArk UI supports internationalization via `react-i18next`. Currently available in **English**.
+
+Help us translate ApiArk into your language! See the [`locales/`](apps/desktop/src/locales/) directory and submit a PR.
 
 ## Development
 
@@ -201,8 +271,18 @@ apiark/
 
 ## Contributing
 
-Contributions are welcome. Please read the [CLAUDE.md](CLAUDE.md) blueprint for architecture details and conventions.
+Contributions are welcome! Please read the [CLAUDE.md](CLAUDE.md) blueprint for architecture details and conventions.
+
+<a href="https://github.com/berbicanes/apiark/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=berbicanes/apiark" alt="Contributors" />
+</a>
 
 ## License
 
-MIT
+[MIT](LICENSE)
+
+---
+
+<p align="center">
+  <sub>If ApiArk helps your workflow, consider giving it a star. It helps others discover the project.</sub>
+</p>
