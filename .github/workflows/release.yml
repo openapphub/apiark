@@ -136,7 +136,7 @@ jobs:
           args: --target ${{ matrix.target }}
           updaterJsonPreferNsis: true
 
-      - name: Upload updater signatures
+      - name: Upload all bundle artifacts
         if: always()
         uses: actions/github-script@v7
         env:
@@ -166,21 +166,27 @@ jobs:
             }
             walkDir(bundleDir);
 
-            // Filter to updater-relevant files (sigs + updater bundles)
-            const updaterFiles = allFiles.filter(f => {
+            // Filter to uploadable files (updater sigs + installers not uploaded by tauri-action)
+            const uploadFiles = allFiles.filter(f => {
               const name = path.basename(f);
+              // Updater signatures and bundles
               if (name.endsWith('.sig')) return true;
               if (name.endsWith('.AppImage.tar.gz')) return true;
               if (name.endsWith('.app.tar.gz')) return true;
               if (name.endsWith('.nsis.zip')) return true;
               if (name.endsWith('.msi.zip')) return true;
+              // Installers not uploaded by tauri-action
+              if (name.endsWith('.deb')) return true;
+              if (name.endsWith('.rpm')) return true;
+              if (name.endsWith('.msi')) return true;
+              if (name.endsWith('-setup.exe')) return true;
               return false;
             });
 
             console.log('All files found:', allFiles.length);
-            console.log('Updater files to upload:', updaterFiles.map(f => path.basename(f)));
+            console.log('Files to upload:', uploadFiles.map(f => path.basename(f)));
 
-            for (const file of updaterFiles) {
+            for (const file of uploadFiles) {
               let name = path.basename(file);
 
               // Rename macOS sigs/bundles to match arch-suffixed asset names
