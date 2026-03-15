@@ -97,21 +97,25 @@ fn interpolate_params(
     interpolated.headers = params
         .headers
         .iter()
-        .map(|h| KeyValuePair::new(
-            interpolation::interpolate(&h.key, vars),
-            interpolation::interpolate(&h.value, vars),
-            h.enabled,
-        ))
+        .map(|h| {
+            KeyValuePair::new(
+                interpolation::interpolate(&h.key, vars),
+                interpolation::interpolate(&h.value, vars),
+                h.enabled,
+            )
+        })
         .collect();
 
     interpolated.params = params
         .params
         .iter()
-        .map(|p| KeyValuePair::new(
-            interpolation::interpolate(&p.key, vars),
-            interpolation::interpolate(&p.value, vars),
-            p.enabled,
-        ))
+        .map(|p| {
+            KeyValuePair::new(
+                interpolation::interpolate(&p.key, vars),
+                interpolation::interpolate(&p.value, vars),
+                p.enabled,
+            )
+        })
         .collect();
 
     if let Some(ref body) = params.body {

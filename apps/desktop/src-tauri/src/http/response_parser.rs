@@ -24,11 +24,13 @@ pub async fn parse_response(
     let headers: Vec<KeyValuePair> = response
         .headers()
         .iter()
-        .map(|(name, value)| KeyValuePair::new(
-            name.to_string(),
-            value.to_str().unwrap_or("<binary>").to_string(),
-            true,
-        ))
+        .map(|(name, value)| {
+            KeyValuePair::new(
+                name.to_string(),
+                value.to_str().unwrap_or("<binary>").to_string(),
+                true,
+            )
+        })
         .collect();
 
     // Collect cookies

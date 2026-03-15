@@ -149,7 +149,11 @@ fn parse_item(item: &Value, warnings: &mut Vec<ImportWarning>) -> Option<ImportI
         method,
         url,
         headers,
-        params: if path_variables.is_empty() { None } else { Some(path_variables) },
+        params: if path_variables.is_empty() {
+            None
+        } else {
+            Some(path_variables)
+        },
         body: Box::new(body),
         auth: Box::new(auth),
         description,

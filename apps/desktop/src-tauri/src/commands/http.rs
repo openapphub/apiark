@@ -318,21 +318,25 @@ fn interpolate_params(
     interpolated.headers = params
         .headers
         .iter()
-        .map(|h| KeyValuePair::new(
-            interpolation::interpolate(&h.key, vars),
-            interpolation::interpolate(&h.value, vars),
-            h.enabled,
-        ))
+        .map(|h| {
+            KeyValuePair::new(
+                interpolation::interpolate(&h.key, vars),
+                interpolation::interpolate(&h.value, vars),
+                h.enabled,
+            )
+        })
         .collect();
 
     interpolated.params = params
         .params
         .iter()
-        .map(|p| KeyValuePair::new(
-            interpolation::interpolate(&p.key, vars),
-            interpolation::interpolate(&p.value, vars),
-            p.enabled,
-        ))
+        .map(|p| {
+            KeyValuePair::new(
+                interpolation::interpolate(&p.key, vars),
+                interpolation::interpolate(&p.value, vars),
+                p.enabled,
+            )
+        })
         .collect();
 
     if let Some(ref body) = params.body {
@@ -341,11 +345,13 @@ fn interpolate_params(
         new_body.form_data = body
             .form_data
             .iter()
-            .map(|fd| KeyValuePair::new(
-                interpolation::interpolate(&fd.key, vars),
-                interpolation::interpolate(&fd.value, vars),
-                fd.enabled,
-            ))
+            .map(|fd| {
+                KeyValuePair::new(
+                    interpolation::interpolate(&fd.key, vars),
+                    interpolation::interpolate(&fd.value, vars),
+                    fd.enabled,
+                )
+            })
             .collect();
         interpolated.body = Some(new_body);
     }

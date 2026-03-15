@@ -47,11 +47,9 @@ mod http_engine {
     #[tokio::test]
     async fn test_post_json() {
         let mut params = base_params(HttpMethod::POST, "https://httpbin.org/post");
-        params.headers.push(KeyValuePair {
-            key: "Content-Type".into(),
-            value: "application/json".into(),
-            enabled: true,
-        });
+        params
+            .headers
+            .push(KeyValuePair::new("Content-Type".into(), "application/json".into(), true));
         params.body = Some(RequestBody {
             body_type: BodyType::Json,
             content: r#"{"name":"ApiArk","version":"0.1.0"}"#.into(),
@@ -116,22 +114,10 @@ mod http_engine {
     #[tokio::test]
     async fn test_query_params() {
         let mut params = base_params(HttpMethod::GET, "https://httpbin.org/get");
-        params.params.push(KeyValuePair {
-            key: "foo".into(),
-            value: "bar".into(),
-            enabled: true,
-        });
-        params.params.push(KeyValuePair {
-            key: "baz".into(),
-            value: "123".into(),
-            enabled: true,
-        });
+        params.params.push(KeyValuePair::new("foo".into(), "bar".into(), true));
+        params.params.push(KeyValuePair::new("baz".into(), "123".into(), true));
         // Disabled param should not be sent
-        params.params.push(KeyValuePair {
-            key: "disabled".into(),
-            value: "no".into(),
-            enabled: false,
-        });
+        params.params.push(KeyValuePair::new("disabled".into(), "no".into(), false));
         let resp = HttpEngine::send(params)
             .await
             .expect("Query params request failed");
@@ -146,16 +132,12 @@ mod http_engine {
     #[tokio::test]
     async fn test_custom_headers() {
         let mut params = base_params(HttpMethod::GET, "https://httpbin.org/headers");
-        params.headers.push(KeyValuePair {
-            key: "X-Custom-Header".into(),
-            value: "ApiArkTest".into(),
-            enabled: true,
-        });
-        params.headers.push(KeyValuePair {
-            key: "X-Disabled".into(),
-            value: "should-not-appear".into(),
-            enabled: false,
-        });
+        params
+            .headers
+            .push(KeyValuePair::new("X-Custom-Header".into(), "ApiArkTest".into(), true));
+        params
+            .headers
+            .push(KeyValuePair::new("X-Disabled".into(), "should-not-appear".into(), false));
         let resp = HttpEngine::send(params)
             .await
             .expect("Headers request failed");
@@ -173,16 +155,8 @@ mod http_engine {
             body_type: BodyType::Urlencoded,
             content: String::new(),
             form_data: vec![
-                KeyValuePair {
-                    key: "username".into(),
-                    value: "testuser".into(),
-                    enabled: true,
-                },
-                KeyValuePair {
-                    key: "password".into(),
-                    value: "secret123".into(),
-                    enabled: true,
-                },
+                KeyValuePair::new("username".into(), "testuser".into(), true),
+                KeyValuePair::new("password".into(), "secret123".into(), true),
             ],
         });
         let resp = HttpEngine::send(params).await.expect("Form POST failed");

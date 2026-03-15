@@ -214,8 +214,7 @@ pub async fn create_collection(parent_dir: String, name: String) -> Result<Strin
     let env_dir = apiark_dir.join("environments");
 
     for d in [&apiark_dir, &env_dir] {
-        std::fs::create_dir_all(d)
-            .map_err(|e| format!("Failed to create directory: {e}"))?;
+        std::fs::create_dir_all(d).map_err(|e| format!("Failed to create directory: {e}"))?;
     }
 
     let config = CollectionConfig {
