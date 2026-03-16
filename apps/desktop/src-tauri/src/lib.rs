@@ -80,8 +80,8 @@ use proxy::capture::ProxyCaptureManager;
 use scheduler::monitor::MonitorManager;
 use storage::history::HistoryDb;
 use storage::settings;
-use watcher::collection_watcher::CollectionWatcher;
 use tauri::Manager;
+use watcher::collection_watcher::CollectionWatcher;
 use websocket::manager::WsManager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

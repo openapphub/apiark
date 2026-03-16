@@ -446,7 +446,8 @@ mod tests {
 
     #[test]
     fn test_multiple_path_variables() {
-        let result = parse_postman(r#"{
+        let result = parse_postman(
+            r#"{
             "info": { "name": "Test", "schema": "..." },
             "item": [{
                 "name": "Get post",
@@ -463,7 +464,9 @@ mod tests {
                     }
                 }
             }]
-        }"#).unwrap();
+        }"#,
+        )
+        .unwrap();
 
         match &result.items[0] {
             ImportItem::Request { url, params, .. } => {
@@ -476,7 +479,8 @@ mod tests {
 
     #[test]
     fn test_empty_path_variable_keeps_placeholder() {
-        let result = parse_postman(r#"{
+        let result = parse_postman(
+            r#"{
             "info": { "name": "Test", "schema": "..." },
             "item": [{
                 "name": "Get item",
@@ -490,11 +494,16 @@ mod tests {
                     }
                 }
             }]
-        }"#).unwrap();
+        }"#,
+        )
+        .unwrap();
 
         match &result.items[0] {
             ImportItem::Request { url, params, .. } => {
-                assert_eq!(url, "{{hostUrl}}/items/:id", "empty value should keep :placeholder");
+                assert_eq!(
+                    url, "{{hostUrl}}/items/:id",
+                    "empty value should keep :placeholder"
+                );
                 assert!(params.is_none());
             }
             _ => panic!("expected request"),
@@ -503,7 +512,8 @@ mod tests {
 
     #[test]
     fn test_no_path_variables() {
-        let result = parse_postman(r#"{
+        let result = parse_postman(
+            r#"{
             "info": { "name": "Test", "schema": "..." },
             "item": [{
                 "name": "Health",
@@ -516,7 +526,9 @@ mod tests {
                     }
                 }
             }]
-        }"#).unwrap();
+        }"#,
+        )
+        .unwrap();
 
         match &result.items[0] {
             ImportItem::Request { url, params, .. } => {
