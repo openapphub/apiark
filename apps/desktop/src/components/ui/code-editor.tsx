@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import Editor, { type OnMount, loader } from "@monaco-editor/react";
 import type * as Monaco from "monaco-editor";
 import { useResolvedTheme } from "@/hooks/use-theme";
@@ -182,12 +182,18 @@ export function CodeEditor({
   const resolvedTheme = useResolvedTheme();
   const monacoTheme = getMonacoTheme(resolvedTheme);
 
+  const [contentLeft, setContentLeft] = useState(56);
+
   const handleMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
     registerGraphQL(monaco);
     registerThemes(monaco);
     monaco.editor.setTheme(monacoTheme);
+    setContentLeft(editor.getLayoutInfo().contentLeft);
+    editor.onDidLayoutChange((layout) => {
+      setContentLeft(layout.contentLeft);
+    });
   }, [monacoTheme]);
 
   // Switch theme when app theme changes
@@ -200,7 +206,7 @@ export function CodeEditor({
   return (
     <div className="relative h-full overflow-hidden rounded border border-[var(--color-border)]">
       {showPlaceholder && (
-        <div className="pointer-events-none absolute left-14 top-2 z-10 text-sm text-[var(--color-text-dimmed)]">
+        <div className="pointer-events-none absolute top-2 z-10 text-sm text-[var(--color-text-dimmed)]" style={{ left: contentLeft }}>
           {placeholder}
         </div>
       )}

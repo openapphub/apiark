@@ -42,85 +42,6 @@ export function ResponsePanel() {
   const failedCount = (testResults?.filter((t) => !t.passed).length ?? 0) +
     (assertionResults?.filter((a) => !a.passed).length ?? 0);
 
-  // Code generation is always available (doesn't need a response)
-  if (activeTab === "code") {
-    return (
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <ResponseTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          response={response}
-          hasTestResults={hasTestResults}
-          failedCount={failedCount}
-          consoleCount={consoleOutput.length}
-        />
-        <CodeGenerationPanel />
-      </div>
-    );
-  }
-
-  // Tests tab can be shown even without a response (shows empty state)
-  if (activeTab === "tests") {
-    return (
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <ResponseTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          response={response}
-          hasTestResults={hasTestResults}
-          failedCount={failedCount}
-          consoleCount={consoleOutput.length}
-        />
-        <div className="flex-1 overflow-auto p-3">
-          <TestResultsPanel
-            testResults={testResults}
-            assertionResults={assertionResults}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Console tab
-  if (activeTab === "console") {
-    return (
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <ResponseTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          response={response}
-          hasTestResults={hasTestResults}
-          failedCount={failedCount}
-          consoleCount={consoleOutput.length}
-        />
-        <div className="flex-1 overflow-auto p-3">
-          <ConsolePanel entries={consoleOutput} />
-        </div>
-      </div>
-    );
-  }
-
-  // Empty state
-  if (!response && !error && !loading) {
-    return (
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <ResponseTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          response={null}
-          hasTestResults={hasTestResults}
-          failedCount={failedCount}
-          consoleCount={consoleOutput.length}
-        />
-        <EmptyState
-          icon={<RocketIcon />}
-          title="Send a request to see the response"
-          description="Use Ctrl+Enter to send quickly"
-        />
-      </div>
-    );
-  }
-
   // Loading state — skeleton shimmer
   if (loading) {
     return (
@@ -133,34 +54,31 @@ export function ResponsePanel() {
   // Error state
   if (error) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center" role="alert">
-        <AlertCircle className="h-10 w-10 text-red-500" aria-hidden="true" />
-        <div>
-          <p className="text-sm font-medium text-red-400">{error.message}</p>
-          {error.suggestion && (
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">{error.suggestion}</p>
-          )}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <ResponseTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          response={null}
+          hasTestResults={hasTestResults}
+          failedCount={failedCount}
+          consoleCount={consoleOutput.length}
+        />
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center" role="alert">
+          <AlertCircle className="h-10 w-10 text-red-500" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-medium text-red-400">{error.message}</p>
+            {error.suggestion && (
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">{error.suggestion}</p>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!response) return null;
-
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Status bar */}
-      <div className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2" role="status" aria-live="polite">
-        <span className={`text-sm font-semibold animate-status-pulse ${statusColor(response.status)}`} aria-label={`Response: ${response.status} ${response.statusText}, ${response.status < 300 ? "success" : response.status < 400 ? "redirect" : response.status < 500 ? "client error" : "server error"}`}>
-          {response.status} {response.statusText}
-        </span>
-        <span className="text-xs text-[var(--color-text-muted)]">{response.timeMs}ms</span>
-        <span className="text-xs text-[var(--color-text-muted)]">
-          {formatSize(response.sizeBytes)}
-        </span>
-      </div>
-
-      {/* Tabs */}
+      {/* Tabs — always on top */}
       <ResponseTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -170,8 +88,48 @@ export function ResponsePanel() {
         consoleCount={consoleOutput.length}
       />
 
+      {/* Status bar — below tabs, always visible when response exists */}
+      {response && (
+        <div className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5" role="status" aria-live="polite">
+          <span className={`text-sm font-semibold animate-status-pulse ${statusColor(response.status)}`} aria-label={`Response: ${response.status} ${response.statusText}, ${response.status < 300 ? "success" : response.status < 400 ? "redirect" : response.status < 500 ? "client error" : "server error"}`}>
+            {response.status} {response.statusText}
+          </span>
+          <span className="text-xs text-[var(--color-text-muted)]">{response.timeMs}ms</span>
+          <span className="text-xs text-[var(--color-text-muted)]">
+            {formatSize(response.sizeBytes)}
+          </span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!response && activeTab !== "code" && activeTab !== "tests" && activeTab !== "console" && (
+        <EmptyState
+          icon={<RocketIcon />}
+          title="Send a request to see the response"
+          description="Use Ctrl+Enter to send quickly"
+        />
+      )}
+
       {/* Content */}
-      <div className={`flex-1 animate-fade-in ${activeTab === "body" ? "flex min-h-0 flex-col p-3 pb-0" : "overflow-auto p-3"}`}>
+      {activeTab === "code" && <CodeGenerationPanel />}
+
+      {activeTab === "tests" && (
+        <div className="flex-1 overflow-auto p-3">
+          <TestResultsPanel
+            testResults={testResults}
+            assertionResults={assertionResults}
+          />
+        </div>
+      )}
+
+      {activeTab === "console" && (
+        <div className="flex-1 overflow-auto p-3">
+          <ConsolePanel entries={consoleOutput} />
+        </div>
+      )}
+
+      {response && (
+        <div className={`flex-1 animate-fade-in ${activeTab === "body" ? "flex min-h-0 flex-col p-3 pb-0" : "overflow-auto p-3"}`}>
         {activeTab === "body" && (() => {
           const language = getLanguageFromHeaders(response.headers);
           const formattedBody = tryFormatBody(response.body, language);
@@ -244,6 +202,7 @@ export function ResponsePanel() {
 
         {activeTab === "timing" && <TimingPanel response={response} />}
       </div>
+      )}
     </div>
   );
 }

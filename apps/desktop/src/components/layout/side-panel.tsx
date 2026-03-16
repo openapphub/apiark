@@ -623,7 +623,7 @@ function EnvironmentEditor({
         />
         <button
           onClick={handleSave}
-          className="rounded bg-[var(--color-accent)] px-2.5 py-1 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
+          className="shrink-0 rounded bg-[var(--color-accent)] px-2.5 py-1 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
         >
           Save
         </button>

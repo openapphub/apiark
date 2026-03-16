@@ -81,6 +81,7 @@ use scheduler::monitor::MonitorManager;
 use storage::history::HistoryDb;
 use storage::settings;
 use watcher::collection_watcher::CollectionWatcher;
+use tauri::Manager;
 use websocket::manager::WsManager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -176,6 +177,15 @@ pub fn run() {
         license_state.status.lock().unwrap().tier
     );
 
+    // Load persisted window state before creating the window
+    let state_path = apiark_dir.join("state.json");
+    let persisted = storage::state::load_persisted_state(&state_path);
+    let should_maximize = persisted
+        .window_state
+        .as_ref()
+        .map(|ws| ws.maximized)
+        .unwrap_or(false);
+
     tauri::Builder::default()
         .manage(app_state)
         .manage(settings_state)
@@ -198,6 +208,14 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_deep_link::init())
+        .setup(move |app| {
+            if should_maximize {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.maximize();
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             send_request,

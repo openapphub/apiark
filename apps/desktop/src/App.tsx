@@ -15,7 +15,7 @@ import { SSEView } from "@/components/sse/sse-view";
 import { CollectionRunnerDialog } from "@/components/runner/collection-runner-dialog";
 import { ImportDialog } from "@/components/import/import-dialog";
 import type { TabProtocol } from "@apiark/types";
-import { useTabStore, useActiveTab } from "@/stores/tab-store";
+import { useTabStore, useActiveTab, initWindowStateTracker } from "@/stores/tab-store";
 import { useConsoleStore } from "@/stores/console-store";
 import { useHistoryStore } from "@/stores/history-store";
 import { useSettingsStore } from "@/stores/settings-store";
@@ -73,24 +73,17 @@ function App() {
   useFileWatcher();
   const { autoSaveError } = useAutoSave();
 
+  // Init window state tracker once on mount
+  useEffect(() => {
+    initWindowStateTracker();
+  }, []);
+
   // Load settings and restore tabs on mount
   useEffect(() => {
     loadSettings();
     restoreTabs();
 
-    // Restore window position/size from persisted state
-    import("@/lib/tauri-api").then(async ({ loadPersistedState }) => {
-      try {
-        const state = await loadPersistedState();
-        if (state.windowState) {
-          const { x, y, width, height } = state.windowState;
-          const { getCurrentWindow, LogicalPosition, LogicalSize } = await import("@tauri-apps/api/window");
-          const win = getCurrentWindow();
-          await win.setPosition(new LogicalPosition(x, y)).catch(() => {});
-          await win.setSize(new LogicalSize(width, height)).catch(() => {});
-        }
-      } catch { /* ignore */ }
-    }).catch(() => {});
+    // Window restore is handled in Rust (lib.rs setup hook)
   }, [loadSettings, restoreTabs]);
 
   // Show welcome screen on first run

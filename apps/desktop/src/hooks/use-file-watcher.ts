@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useTabStore } from "@/stores/tab-store";
+import { useTabStore, wasRecentlySaved } from "@/stores/tab-store";
 import { useCollectionStore } from "@/stores/collection-store";
 import type { FileChangeEvent } from "@apiark/types";
 
@@ -8,6 +8,7 @@ import type { FileChangeEvent } from "@apiark/types";
  * - Refreshes the collection tree for created/deleted files
  * - Auto-reloads clean open tabs on external modification
  * - Sets conflict state on dirty open tabs on external modification
+ * - Ignores changes triggered by our own save/autoSave
  */
 export function useFileWatcher() {
   const listenerRef = useRef<(() => void) | null>(null);
@@ -27,6 +28,11 @@ export function useFileWatcher() {
             // Refresh collection tree for structural changes
             if (changeType === "created" || changeType === "deleted") {
               useCollectionStore.getState().refreshCollection(collectionPath);
+            }
+
+            // Ignore file changes triggered by our own save/autoSave
+            if (wasRecentlySaved(path)) {
+              return;
             }
 
             // Handle open tab conflicts

@@ -105,7 +105,7 @@ export function BottomPanel({ terminalOpen, onTerminalOpenChange }: BottomPanelP
           className="rounded-md p-1 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
           title="Close panel"
         >
-          <ChevronDown className="h-3.5 w-3.5" />
+          <ChevronDown className="h-4 w-4" />
         </button>
       </div>
 
@@ -143,13 +143,13 @@ function PanelTab({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
         active
           ? "border-b-2 border-[var(--color-accent)] text-[var(--color-text-primary)]"
           : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
       }`}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-4 w-4" />
       {label}
     </button>
   );
@@ -163,12 +163,12 @@ function ConsoleControls() {
   return (
     <div className="flex items-center gap-2 pr-1">
       <div className="flex items-center gap-0.5 rounded-lg bg-[var(--color-elevated)] p-0.5">
-        <Filter className="mx-1 h-3 w-3 text-[var(--color-text-dimmed)]" />
+        <Filter className="mx-1 h-4 w-4 text-[var(--color-text-dimmed)]" />
         {(["all", "log", "info", "warn", "error"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors ${
               filter === f
                 ? "bg-[var(--color-accent)] text-white"
                 : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
@@ -183,7 +183,7 @@ function ConsoleControls() {
         className="rounded-md p-1 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
         title="Clear console"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </button>
     </div>
   );
@@ -204,7 +204,7 @@ function ConsoleContent() {
   }, [filtered.length]);
 
   return (
-    <div ref={listRef} className="h-full overflow-auto font-mono text-xs">
+    <div ref={listRef} className="h-full overflow-auto font-mono text-sm">
       {filtered.length === 0 ? (
         <div className="flex h-full items-center justify-center text-[var(--color-text-dimmed)]">
           No console output

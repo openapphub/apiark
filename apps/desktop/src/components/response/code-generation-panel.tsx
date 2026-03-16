@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Copy, Check } from "lucide-react";
 import { useActiveTab } from "@/stores/tab-store";
+import { useEnvironmentStore } from "@/stores/environment-store";
 import { generateCurl, generateJsFetch, generatePythonRequests } from "@/lib/code-generators";
+import type { Tab } from "@apiark/types";
 
 type Language = "curl" | "javascript" | "python";
 
@@ -11,22 +13,63 @@ const LANGUAGES: { value: Language; label: string }[] = [
   { value: "python", label: "Python" },
 ];
 
+/** Replace all {{varName}} in a string with resolved values */
+function resolveVariables(str: string, vars: Record<string, string>): string {
+  return str.replace(/\{\{([\w$]+)\}\}/g, (_, name) => vars[name] ?? `{{${name}}}`);
+}
+
+/** Create a copy of the tab with all variables resolved */
+function resolveTab(tab: Tab, vars: Record<string, string>): Tab {
+  return {
+    ...tab,
+    url: resolveVariables(tab.url, vars),
+    headers: tab.headers.map((h) => ({
+      ...h,
+      key: resolveVariables(h.key, vars),
+      value: resolveVariables(h.value, vars),
+    })),
+    params: tab.params.map((p) => ({
+      ...p,
+      key: resolveVariables(p.key, vars),
+      value: resolveVariables(p.value, vars),
+    })),
+    body: {
+      ...tab.body,
+      content: resolveVariables(tab.body.content, vars),
+    },
+    auth: tab.auth.type === "bearer"
+      ? { ...tab.auth, token: resolveVariables(tab.auth.token, vars) }
+      : tab.auth.type === "api-key"
+        ? { ...tab.auth, key: resolveVariables(tab.auth.key, vars), value: resolveVariables(tab.auth.value, vars) }
+        : tab.auth,
+  };
+}
+
 export function CodeGenerationPanel() {
   const tab = useActiveTab();
   const [language, setLanguage] = useState<Language>("curl");
   const [copied, setCopied] = useState(false);
+  const [resolvedVars, setResolvedVars] = useState<Record<string, string>>({});
+  const activeEnvName = useEnvironmentStore((s) => s.activeEnvironmentName);
+
+  useEffect(() => {
+    useEnvironmentStore.getState().getResolvedVariables()
+      .then(setResolvedVars)
+      .catch(() => setResolvedVars({}));
+  }, [tab?.url, tab?.headers, tab?.body.content, activeEnvName]);
 
   const code = useMemo(() => {
     if (!tab) return "";
+    const resolved = resolveTab(tab, resolvedVars);
     switch (language) {
       case "curl":
-        return generateCurl(tab);
+        return generateCurl(resolved);
       case "javascript":
-        return generateJsFetch(tab);
+        return generateJsFetch(resolved);
       case "python":
-        return generatePythonRequests(tab);
+        return generatePythonRequests(resolved);
     }
-  }, [tab, language]);
+  }, [tab, language, resolvedVars]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);

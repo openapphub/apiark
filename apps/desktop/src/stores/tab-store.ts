@@ -96,6 +96,106 @@ function generateTabId(): string {
   return `tab_${Date.now()}_${++tabCounter}`;
 }
 
+/**
+ * Parse query params from a URL string into KeyValuePair[].
+ * Returns { baseUrl, params } where baseUrl has no query string.
+ */
+function parseUrlParams(url: string): { baseUrl: string; params: KeyValuePair[] } {
+  const qIndex = url.indexOf("?");
+  if (qIndex === -1) return { baseUrl: url, params: [] };
+
+  const baseUrl = url.slice(0, qIndex);
+  const queryString = url.slice(qIndex + 1);
+  const params: KeyValuePair[] = [];
+
+  if (queryString) {
+    for (const part of queryString.split("&")) {
+      const eqIndex = part.indexOf("=");
+      const key = eqIndex === -1 ? part : part.slice(0, eqIndex);
+      const value = eqIndex === -1 ? "" : part.slice(eqIndex + 1);
+      params.push({ id: kvId(), key: decodeURIComponent(key), value: decodeURIComponent(value), enabled: true });
+    }
+  }
+
+  return { baseUrl, params };
+}
+
+/**
+ * Build a URL query string from KeyValuePair[], appending to a base URL.
+ */
+function buildUrlWithParams(baseUrl: string, params: KeyValuePair[]): string {
+  const enabledParams = params.filter((p) => p.enabled && p.key.trim());
+  if (enabledParams.length === 0) return baseUrl;
+  const qs = enabledParams
+    .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+    .join("&");
+  return `${baseUrl}?${qs}`;
+}
+
+/**
+ * Tracks file paths that were recently saved by us (save/autoSave).
+ * The file watcher checks this set to avoid reloading tabs that we just wrote.
+ */
+const recentlySavedPaths = new Set<string>();
+const RECENTLY_SAVED_TTL = 2000; // ms — ignore watcher events for this long after save
+
+function markRecentlySaved(filePath: string) {
+  recentlySavedPaths.add(filePath);
+  setTimeout(() => recentlySavedPaths.delete(filePath), RECENTLY_SAVED_TTL);
+}
+
+export function wasRecentlySaved(filePath: string): boolean {
+  return recentlySavedPaths.has(filePath);
+}
+
+/**
+ * Tracks whether the window is currently maximized.
+ * Updated via a Tauri event listener so it's always available synchronously
+ * (needed because persistTabs runs during beforeunload where async won't complete).
+ */
+let cachedMaximized = false;
+
+// Store the last known "normal" (non-maximized) window geometry
+let normalWindowGeometry = { x: 100, y: 100, width: 1280, height: 800 };
+
+/**
+ * Detect maximized by comparing window size to screen.availWidth/Height.
+ * Tauri's isMaximized() is unreliable on some Linux WMs.
+ */
+function detectMaximized(): boolean {
+  const threshold = 100; // px tolerance for taskbars/panels
+  return (
+    window.outerWidth >= screen.availWidth - threshold &&
+    window.outerHeight >= screen.availHeight - threshold
+  );
+}
+
+export function initWindowStateTracker() {
+  // no-op — tracking is now module-level
+}
+
+// Module-level: runs as soon as this file is imported
+if (typeof window !== "undefined") {
+  // Track normal geometry on resize (only when not maximized)
+  window.addEventListener("resize", () => {
+    cachedMaximized = detectMaximized();
+    if (!cachedMaximized) {
+      normalWindowGeometry = {
+        x: window.screenX,
+        y: window.screenY,
+        width: window.outerWidth,
+        height: window.outerHeight,
+      };
+    }
+  });
+
+  // Persist window state periodically so it survives hard kills (Ctrl+C)
+  setInterval(() => {
+    cachedMaximized = detectMaximized();
+    useTabStore.getState().persistTabs();
+  }, 5000);
+}
+
 let kvCounter = 0;
 const kvId = () => `kv_${Date.now()}_${++kvCounter}`;
 const emptyKvRow = (): KeyValuePair => ({ id: kvId(), key: "", value: "", enabled: true });
@@ -162,11 +262,18 @@ function requestFileToTab(
   );
   if (headers.length === 0) headers.push(emptyKvRow());
 
-  // Convert Record<string, string> params to KeyValuePair[]
-  const params: KeyValuePair[] = Object.entries(file.params || {}).map(
+  // Merge params from file AND from URL query string
+  const fileParams: KeyValuePair[] = Object.entries(file.params || {}).map(
     ([key, value]) => ({ id: kvId(), key, value, enabled: true }),
   );
-  if (params.length === 0) params.push(emptyKvRow());
+  const { params: urlParams } = parseUrlParams(file.url);
+  // Combine: URL query params first, then file params (avoiding duplicates)
+  const seenKeys = new Set(urlParams.map((p) => p.key));
+  const mergedParams = [
+    ...urlParams,
+    ...fileParams.filter((p) => !seenKeys.has(p.key)),
+  ];
+  const params = mergedParams.length > 0 ? [...mergedParams, emptyKvRow()] : [emptyKvRow()];
 
   // Convert body
   const body: RequestBody = file.body
@@ -261,24 +368,35 @@ function tabToRequestFile(tab: Tab): RequestFile {
     }
   }
 
-  const params: Record<string, string> = {};
-  for (const p of tab.params) {
-    if (p.key.trim() && p.enabled) {
-      params[p.key] = p.value;
+  // Params are synced into the URL query string — no separate field needed
+
+  // For GraphQL tabs, serialize the query/variables into a JSON body
+  // so it's detected as GraphQL when loaded back (requestFileToTab checks for body.content with "query")
+  let body: { type: string; content: string } | undefined;
+  if (tab.protocol === "graphql" && tab.graphql) {
+    const gqlBody: Record<string, unknown> = { query: tab.graphql.query };
+    try {
+      const vars = JSON.parse(tab.graphql.variables);
+      if (Object.keys(vars).length > 0) gqlBody.variables = vars;
+    } catch { /* ignore invalid JSON */ }
+    if (tab.graphql.operationName) gqlBody.operationName = tab.graphql.operationName;
+    body = { type: "json", content: JSON.stringify(gqlBody, null, 2) };
+    // Ensure Content-Type header is set
+    if (!headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
     }
+  } else if (tab.body.type !== "none") {
+    body = { type: tab.body.type, content: tab.body.content };
   }
 
   return {
     name: tab.name,
-    method: tab.method,
-    url: tab.url,
+    method: tab.protocol === "graphql" ? "POST" : tab.method,
+    url: tab.url, // URL already contains query params (synced)
     headers,
-    params: Object.keys(params).length > 0 ? params : undefined,
+    // Don't save params separately — they're in the URL query string
     auth: tab.auth.type !== "none" ? tab.auth : undefined,
-    body:
-      tab.body.type !== "none"
-        ? { type: tab.body.type, content: tab.body.content }
-        : undefined,
+    body,
     preRequestScript: tab.preRequestScript || undefined,
     postResponseScript: tab.postResponseScript || undefined,
     tests: tab.testScript || undefined,
@@ -484,9 +602,23 @@ export const useTabStore = create<TabState>((set, get) => ({
 
   // Request mutations (apply to active tab)
   setMethod: (method) => set((state) => updateActiveTab(state, () => ({ method }))),
-  setUrl: (url) => set((state) => updateActiveTab(state, () => ({ url }))),
+  setUrl: (url) => set((state) => updateActiveTab(state, (tab) => {
+    // Sync: extract query params from URL into the params table
+    const { params: urlParams } = parseUrlParams(url);
+    // Keep any empty trailing row for UX
+    const emptyRow = tab.params.find((p) => !p.key.trim());
+    const newParams = urlParams.length > 0
+      ? [...urlParams, emptyRow || emptyKvRow()]
+      : [emptyKvRow()];
+    return { url, params: newParams };
+  })),
   setHeaders: (headers) => set((state) => updateActiveTab(state, () => ({ headers }))),
-  setParams: (params) => set((state) => updateActiveTab(state, () => ({ params }))),
+  setParams: (params) => set((state) => updateActiveTab(state, (tab) => {
+    // Sync: rebuild URL query string from params
+    const baseUrl = tab.url.split("?")[0];
+    const newUrl = buildUrlWithParams(baseUrl, params);
+    return { params, url: newUrl };
+  })),
   setBody: (body) => set((state) => updateActiveTab(state, () => ({ body }))),
   setAuth: (auth) => set((state) => updateActiveTab(state, () => ({ auth }))),
   setPreRequestScript: (script) => set((state) => updateActiveTab(state, () => ({ preRequestScript: script }))),
@@ -557,7 +689,9 @@ export const useTabStore = create<TabState>((set, get) => ({
       method: tab.protocol === "graphql" ? ("POST" as const) : tab.method,
       url: tab.url.trim(),
       headers,
-      params: tab.params.filter((p) => p.key.trim() !== "" && p.enabled),
+      // Params are already synced into the URL query string, so send empty
+      // to avoid the Rust side double-appending them
+      params: [] as KeyValuePair[],
       body,
       auth: tab.auth.type !== "none" ? tab.auth : undefined,
       proxy,
@@ -655,6 +789,7 @@ export const useTabStore = create<TabState>((set, get) => ({
 
     try {
       const requestFile = tabToRequestFile(tab);
+      markRecentlySaved(tab.filePath);
       await saveRequestFile(tab.filePath, requestFile);
       set({
         tabs: get().tabs.map((t) =>
@@ -675,6 +810,7 @@ export const useTabStore = create<TabState>((set, get) => ({
 
     try {
       const requestFile = tabToRequestFile(tab);
+      markRecentlySaved(tab.filePath);
       await saveRequestFile(tab.filePath, requestFile);
       set({
         autoSaveError: null,
@@ -813,19 +949,29 @@ export const useTabStore = create<TabState>((set, get) => ({
 
   persistTabs: () => {
     const { tabs, activeTabId } = get();
-    // Only persist file-backed tabs (exclude ephemeral WS/SSE tabs)
+    // Only persist file-backed tabs (exclude ephemeral WS/SSE tabs), deduplicated
+    const seen = new Set<string>();
     const persistedTabs = tabs
-      .filter((t) => t.filePath && t.collectionPath && t.protocol !== "websocket" && t.protocol !== "sse" && t.protocol !== "grpc")
+      .filter((t) => {
+        if (!t.filePath || !t.collectionPath || t.protocol === "websocket" || t.protocol === "sse" || t.protocol === "grpc") return false;
+        if (seen.has(t.filePath)) return false;
+        seen.add(t.filePath);
+        return true;
+      })
       .map((t) => ({ filePath: t.filePath!, collectionPath: t.collectionPath! }));
     const activeIndex = tabs.findIndex((t) => t.id === activeTabId);
 
-    // Capture window position/size
-    const windowState = {
+    // Capture window position/size — use normal (non-maximized) geometry
+    // so restoring from maximized doesn't span multiple monitors
+    const geo = cachedMaximized ? normalWindowGeometry : {
       x: window.screenX,
       y: window.screenY,
       width: window.outerWidth,
       height: window.outerHeight,
-      maximized: false, // Will be updated from Tauri API if needed
+    };
+    const windowState = {
+      ...geo,
+      maximized: cachedMaximized,
     };
 
     savePersistedState({
@@ -841,8 +987,13 @@ export const useTabStore = create<TabState>((set, get) => ({
       if (persisted.tabs.length === 0) return;
 
       const collectionPaths = new Set<string>();
+      const seenPaths = new Set<string>();
 
       for (const pt of persisted.tabs) {
+        // Deduplicate — only restore one tab per file path
+        if (seenPaths.has(pt.filePath)) continue;
+        seenPaths.add(pt.filePath);
+
         try {
           const file = await readRequestFile(pt.filePath);
           const tab = requestFileToTab(file, pt.filePath, pt.collectionPath);

@@ -2,6 +2,7 @@ import type { Tab } from "@apiark/types";
 
 export function generateCurl(tab: Tab): string {
   const parts = [`curl -X ${tab.method}`];
+  // URL already contains query params (synced from Params tab)
   parts.push(`'${tab.url}'`);
 
   for (const h of tab.headers) {
@@ -23,25 +24,12 @@ export function generateCurl(tab: Tab): string {
     parts.push(`-d '${escaped}'`);
   }
 
-  // Add query params to URL
-  const enabledParams = tab.params.filter((p) => p.key.trim() && p.enabled);
-  if (enabledParams.length > 0) {
-    const qs = enabledParams.map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`).join("&");
-    const sep = tab.url.includes("?") ? "&" : "?";
-    parts[1] = `'${tab.url}${sep}${qs}'`;
-  }
-
   return parts.join(" \\\n  ");
 }
 
 export function generateJsFetch(tab: Tab): string {
-  const enabledParams = tab.params.filter((p) => p.key.trim() && p.enabled);
-  let url = tab.url;
-  if (enabledParams.length > 0) {
-    const qs = enabledParams.map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`).join("&");
-    const sep = url.includes("?") ? "&" : "?";
-    url = `${url}${sep}${qs}`;
-  }
+  // URL already contains query params (synced from Params tab)
+  const url = tab.url;
 
   const headers: Record<string, string> = {};
   for (const h of tab.headers) {
@@ -89,8 +77,6 @@ export function generateJsFetch(tab: Tab): string {
 }
 
 export function generatePythonRequests(tab: Tab): string {
-  const enabledParams = tab.params.filter((p) => p.key.trim() && p.enabled);
-
   const headers: Record<string, string> = {};
   for (const h of tab.headers) {
     if (h.key.trim() && h.enabled) {
@@ -106,16 +92,11 @@ export function generatePythonRequests(tab: Tab): string {
 
   const lines = ["import requests", ""];
 
+  // URL already contains query params (synced from Params tab)
   lines.push(`url = "${tab.url}"`);
 
   if (Object.keys(headers).length > 0) {
     lines.push(`headers = ${pythonDict(headers)}`);
-  }
-
-  if (enabledParams.length > 0) {
-    const params: Record<string, string> = {};
-    for (const p of enabledParams) params[p.key] = p.value;
-    lines.push(`params = ${pythonDict(params)}`);
   }
 
   const hasBody = tab.body.type !== "none" && tab.body.content.trim();
@@ -130,7 +111,6 @@ export function generatePythonRequests(tab: Tab): string {
   // Build the request call
   const args = [`url`];
   if (Object.keys(headers).length > 0) args.push("headers=headers");
-  if (enabledParams.length > 0) args.push("params=params");
   if (hasBody) {
     args.push(tab.body.type === "json" ? "json=json_data" : "data=data");
   }

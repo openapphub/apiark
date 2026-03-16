@@ -38,30 +38,30 @@ export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
   };
 
   return (
-    <div className="flex h-8 shrink-0 items-center border-t border-[var(--color-border)] bg-[var(--color-activity-bar)] px-3 text-xs">
+    <div className="flex h-9 shrink-0 items-center border-t border-[var(--color-border)] bg-[var(--color-activity-bar)] px-3 text-[13px]">
       {/* Left side */}
       <div className="flex items-center gap-3">
         {activeEnv && (
           <span className="flex items-center gap-1 text-[var(--color-text-muted)]">
-            <Globe className="h-3.5 w-3.5" />
+            <Globe className="h-4 w-4" />
             {activeEnv}
           </span>
         )}
         {collections.length > 0 && (
           <span className="flex items-center gap-1 text-[var(--color-text-muted)]">
-            <FolderOpen className="h-3.5 w-3.5" />
+            <FolderOpen className="h-4 w-4" />
             {collections.length} collection{collections.length !== 1 ? "s" : ""}
           </span>
         )}
         {runningMocks > 0 && (
           <span className="flex items-center gap-1 text-[var(--color-success)]">
-            <Server className="h-3.5 w-3.5" />
+            <Server className="h-4 w-4" />
             {runningMocks} mock{runningMocks !== 1 ? "s" : ""}
           </span>
         )}
         {activeMonitors > 0 && (
           <span className="flex items-center gap-1 text-[var(--color-success)]">
-            <Activity className="h-3.5 w-3.5" />
+            <Activity className="h-4 w-4" />
             {activeMonitors} monitor{activeMonitors !== 1 ? "s" : ""}
           </span>
         )}
@@ -81,7 +81,7 @@ export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
           }`}
           title="Toggle Console"
         >
-          <ScrollText className="h-3.5 w-3.5" />
+          <ScrollText className="h-4 w-4" />
           {consoleEntries.length > 0 && (
             <span className={`text-[11px] font-bold ${hasErrors ? "text-[var(--color-error)]" : ""}`}>
               {consoleEntries.length}
@@ -100,7 +100,7 @@ export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
             }`}
             title="Toggle Terminal (Ctrl+`)"
           >
-            <Terminal className="h-3.5 w-3.5" />
+            <Terminal className="h-4 w-4" />
           </button>
         )}
 
@@ -117,11 +117,11 @@ export function StatusBar({ onToggleTerminal, terminalOpen }: StatusBarProps) {
           }
         >
           {layout === "horizontal" ? (
-            <Columns2 className="h-3.5 w-3.5" />
+            <Columns2 className="h-4 w-4" />
           ) : layout === "vertical" ? (
-            <Rows2 className="h-3.5 w-3.5" />
+            <Rows2 className="h-4 w-4" />
           ) : (
-            <LayoutList className="h-3.5 w-3.5" />
+            <LayoutList className="h-4 w-4" />
           )}
         </button>
 

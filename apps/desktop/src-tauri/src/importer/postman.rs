@@ -170,7 +170,7 @@ fn parse_url(url_val: Option<&Value>) -> (String, HashMap<String, String>) {
         Some(v) if v.is_string() => (v.as_str().unwrap_or("").to_string(), empty_vars),
         Some(v) => {
             // Extract path variables from url.variable[]
-            let path_variables = v
+            let path_variables: HashMap<String, String> = v
                 .get("variable")
                 .and_then(|vars| vars.as_array())
                 .map(|arr| {
@@ -190,40 +190,53 @@ fn parse_url(url_val: Option<&Value>) -> (String, HashMap<String, String>) {
                 .unwrap_or_default();
 
             // Postman URL object: { raw, host, path, query, ... }
-            if let Some(raw) = v.get("raw").and_then(|r| r.as_str()) {
-                return (raw.to_string(), path_variables);
+            let mut url = if let Some(raw) = v.get("raw").and_then(|r| r.as_str()) {
+                raw.to_string()
+            } else {
+                // Reconstruct from parts
+                let host = v
+                    .get("host")
+                    .and_then(|h| h.as_array())
+                    .map(|parts| {
+                        parts
+                            .iter()
+                            .filter_map(|p| p.as_str())
+                            .collect::<Vec<_>>()
+                            .join(".")
+                    })
+                    .unwrap_or_default();
+
+                let path = v
+                    .get("path")
+                    .and_then(|p| p.as_array())
+                    .map(|parts| {
+                        parts
+                            .iter()
+                            .filter_map(|p| p.as_str())
+                            .collect::<Vec<_>>()
+                            .join("/")
+                    })
+                    .unwrap_or_default();
+
+                let protocol = v
+                    .get("protocol")
+                    .and_then(|p| p.as_str())
+                    .unwrap_or("https");
+
+                format!("{protocol}://{host}/{path}")
+            };
+
+            // Replace :paramName placeholders in the URL with path variable values.
+            // Path variables are NOT query params — they belong in the URL path itself.
+            for (key, value) in &path_variables {
+                if !value.is_empty() {
+                    url = url.replace(&format!(":{key}"), value);
+                }
             }
-            // Reconstruct from parts
-            let host = v
-                .get("host")
-                .and_then(|h| h.as_array())
-                .map(|parts| {
-                    parts
-                        .iter()
-                        .filter_map(|p| p.as_str())
-                        .collect::<Vec<_>>()
-                        .join(".")
-                })
-                .unwrap_or_default();
 
-            let path = v
-                .get("path")
-                .and_then(|p| p.as_array())
-                .map(|parts| {
-                    parts
-                        .iter()
-                        .filter_map(|p| p.as_str())
-                        .collect::<Vec<_>>()
-                        .join("/")
-                })
-                .unwrap_or_default();
-
-            let protocol = v
-                .get("protocol")
-                .and_then(|p| p.as_str())
-                .unwrap_or("https");
-
-            (format!("{protocol}://{host}/{path}"), path_variables)
+            // Path variables have been substituted into the URL, so return empty map
+            // (they should not be added as query params)
+            (url, empty_vars)
         }
     }
 }
@@ -397,5 +410,120 @@ fn parse_auth(auth_val: Option<&Value>) -> Option<AuthConfig> {
         }
         "noauth" | "" => Some(AuthConfig::None),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_path_variable_substitution() {
+        let result = parse_postman(r#"{
+            "info": { "name": "Test", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+            "item": [{
+                "name": "Order by name",
+                "request": {
+                    "method": "GET",
+                    "url": {
+                        "raw": "{{hostUrl}}/order/name/:name",
+                        "host": ["{{hostUrl}}"],
+                        "path": ["order", "name", ":name"],
+                        "variable": [{ "key": "name", "value": "Mujo Hasic" }]
+                    }
+                }
+            }]
+        }"#).unwrap();
+
+        match &result.items[0] {
+            ImportItem::Request { url, params, .. } => {
+                assert_eq!(url, "{{hostUrl}}/order/name/Mujo Hasic");
+                assert!(params.is_none(), "path vars should not become query params");
+            }
+            _ => panic!("expected request"),
+        }
+    }
+
+    #[test]
+    fn test_multiple_path_variables() {
+        let result = parse_postman(r#"{
+            "info": { "name": "Test", "schema": "..." },
+            "item": [{
+                "name": "Get post",
+                "request": {
+                    "method": "GET",
+                    "url": {
+                        "raw": "{{hostUrl}}/users/:userId/posts/:postId",
+                        "host": ["{{hostUrl}}"],
+                        "path": ["users", ":userId", "posts", ":postId"],
+                        "variable": [
+                            { "key": "userId", "value": "123" },
+                            { "key": "postId", "value": "456" }
+                        ]
+                    }
+                }
+            }]
+        }"#).unwrap();
+
+        match &result.items[0] {
+            ImportItem::Request { url, params, .. } => {
+                assert_eq!(url, "{{hostUrl}}/users/123/posts/456");
+                assert!(params.is_none());
+            }
+            _ => panic!("expected request"),
+        }
+    }
+
+    #[test]
+    fn test_empty_path_variable_keeps_placeholder() {
+        let result = parse_postman(r#"{
+            "info": { "name": "Test", "schema": "..." },
+            "item": [{
+                "name": "Get item",
+                "request": {
+                    "method": "GET",
+                    "url": {
+                        "raw": "{{hostUrl}}/items/:id",
+                        "host": ["{{hostUrl}}"],
+                        "path": ["items", ":id"],
+                        "variable": [{ "key": "id", "value": "" }]
+                    }
+                }
+            }]
+        }"#).unwrap();
+
+        match &result.items[0] {
+            ImportItem::Request { url, params, .. } => {
+                assert_eq!(url, "{{hostUrl}}/items/:id", "empty value should keep :placeholder");
+                assert!(params.is_none());
+            }
+            _ => panic!("expected request"),
+        }
+    }
+
+    #[test]
+    fn test_no_path_variables() {
+        let result = parse_postman(r#"{
+            "info": { "name": "Test", "schema": "..." },
+            "item": [{
+                "name": "Health",
+                "request": {
+                    "method": "GET",
+                    "url": {
+                        "raw": "{{hostUrl}}/health",
+                        "host": ["{{hostUrl}}"],
+                        "path": ["health"]
+                    }
+                }
+            }]
+        }"#).unwrap();
+
+        match &result.items[0] {
+            ImportItem::Request { url, params, .. } => {
+                assert_eq!(url, "{{hostUrl}}/health");
+                assert!(params.is_none());
+            }
+            _ => panic!("expected request"),
+        }
     }
 }

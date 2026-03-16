@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { HttpMethod, Tab } from "@apiark/types";
 import { useTabStore } from "@/stores/tab-store";
-import { Plus, X, Globe, Zap, Radio, ChevronDown, Pin } from "lucide-react";
+import { Plus, X, Globe, Zap, Radio, ChevronDown, Pin, Save } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -232,7 +232,8 @@ function NewTabDropdown() {
 }
 
 export function TabBar() {
-  const { tabs, activeTabId, setActiveTab, closeTab, closeOtherTabs, closeAllTabs, reorderTabs, detachTab, togglePin, duplicateTab } = useTabStore();
+  const { tabs, activeTabId, setActiveTab, closeTab, closeOtherTabs, closeAllTabs, reorderTabs, detachTab, togglePin, duplicateTab, save } = useTabStore();
+  const activeTab = tabs.find((t) => t.id === activeTabId);
 
   // Sort: pinned tabs first, preserving order within each group
   const sortedTabs = [...tabs].sort((a, b) => {
@@ -285,10 +286,27 @@ export function TabBar() {
                 onDuplicate={() => duplicateTab(tab.id)}
               />
             ))}
+            <button
+              onClick={() => useTabStore.getState().newTab()}
+              className="mb-0.5 ml-1 shrink-0 rounded-md p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-text-secondary)]"
+              title="New Tab (Ctrl+T)"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
           </div>
         </SortableContext>
       </DndContext>
-      <div className="pb-1.5">
+      <div className="flex items-center gap-1 pb-1.5">
+        {activeTab?.isDirty && (
+          <button
+            onClick={save}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+            title="Save (Ctrl+S)"
+          >
+            <Save className="h-3.5 w-3.5" />
+            Save
+          </button>
+        )}
         <NewTabDropdown />
       </div>
     </div>

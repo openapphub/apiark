@@ -402,8 +402,13 @@ function TreeNodeRow({
 
   const handleDelete = async () => {
     closeContextMenu();
-    if (!confirm(`Delete "${node.name}"?`)) return;
     try {
+      const { ask } = await import("@tauri-apps/plugin-dialog");
+      const confirmed = await ask(`Delete "${node.name}"?`, {
+        title: "Confirm Delete",
+        kind: "warning",
+      });
+      if (!confirmed) return;
       await deleteItem(node.path, collectionName, collectionPath);
     } catch (err) {
       import("@/stores/toast-store").then(({ useToastStore }) =>
@@ -433,20 +438,20 @@ function TreeNodeRow({
   if (node.type === "request") {
     return (
       <>
-        <button
-          onClick={() => openTab(node.path, collectionPath)}
-          onContextMenu={handleContextMenu}
-          className="group flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-sm hover:bg-[var(--color-elevated)]"
+        <div
+          className="group relative flex w-full items-center gap-1.5 rounded px-2 py-1 text-sm hover:bg-[var(--color-elevated)]"
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
+          onContextMenu={handleContextMenu}
         >
           <span
             className="shrink-0 cursor-grab opacity-0 group-hover:opacity-50 hover:!opacity-100"
             {...dragHandleProps}
-            onClick={(e) => e.stopPropagation()}
           >
             <GripVertical className="h-3 w-3 text-[var(--color-text-muted)]" />
           </span>
-          <span className={`w-9 shrink-0 text-[10px] font-bold ${METHOD_COLORS[node.method]}`}>
+          <span
+            className={`w-9 shrink-0 text-[10px] font-bold ${METHOD_COLORS[node.method]}`}
+          >
             {node.method}
           </span>
           {renaming ? (
@@ -459,13 +464,42 @@ function TreeNodeRow({
                 if (e.key === "Enter") submitRename();
                 if (e.key === "Escape") setRenaming(false);
               }}
-              className="flex-1 rounded bg-[var(--color-elevated)] px-1 text-sm text-[var(--color-text-primary)] outline-none ring-1 ring-blue-500"
-              onClick={(e) => e.stopPropagation()}
+              className="min-w-0 flex-1 rounded bg-[var(--color-elevated)] px-1 text-sm text-[var(--color-text-primary)] outline-none ring-1 ring-blue-500"
             />
           ) : (
-            <span className="truncate text-[var(--color-text-secondary)]">{node.name}</span>
+            <>
+              <span
+                className="flex-1 cursor-pointer truncate text-[var(--color-text-secondary)]"
+                onClick={() => openTab(node.path, collectionPath)}
+              >
+                {node.name}
+              </span>
+              {/* Action buttons — visible on hover */}
+              <span className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRename();
+              }}
+              className="rounded p-0.5 text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+              title="Rename"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+              className="rounded p-0.5 text-[var(--color-text-muted)] hover:bg-red-500/20 hover:text-red-400"
+              title="Delete"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </span>
+            </>
           )}
-        </button>
+        </div>
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -610,8 +644,13 @@ function TreeNodeRow({
                     icon: Trash2,
                     onClick: async () => {
                       closeContextMenu();
-                      if (!confirm(`Delete collection "${node.name}"? This will move the entire collection to trash.`)) return;
                       try {
+                        const { ask } = await import("@tauri-apps/plugin-dialog");
+                        const confirmed = await ask(
+                          `Delete collection "${node.name}"? This will move the entire collection to trash.`,
+                          { title: "Confirm Delete", kind: "warning" },
+                        );
+                        if (!confirmed) return;
                         await deleteItem(node.path, collectionName, collectionPath);
                         useCollectionStore.getState().closeCollection(collectionPath);
                       } catch (err) {
@@ -779,7 +818,7 @@ function ContextMenu({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" onMouseDown={onClose} />
       <div
         className="fixed z-50 min-w-[160px] rounded border border-[var(--color-border)] bg-[var(--color-elevated)] py-1 shadow-lg"
         style={{ left: x, top: y }}
