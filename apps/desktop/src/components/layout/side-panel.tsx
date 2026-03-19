@@ -663,7 +663,7 @@ function EnvironmentEditor({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-1 truncate rounded bg-transparent px-1 text-sm font-medium text-[var(--color-text-primary)] outline-none focus:bg-[var(--color-elevated)] focus:ring-1 focus:ring-[var(--color-accent)]"
+          className="min-w-0 flex-1 truncate rounded bg-transparent px-1 text-sm font-medium text-[var(--color-text-primary)] outline-none focus:bg-[var(--color-elevated)] focus:ring-1 focus:ring-[var(--color-accent)]"
         />
         <button
           onClick={handleSave}

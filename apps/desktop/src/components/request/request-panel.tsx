@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTabStore, useActiveTab } from "@/stores/tab-store";
 import { KeyValueEditor } from "./key-value-editor";
-import type { AuthConfig, BodyType, RequestBody, OAuth2GrantType, OAuthTokenStatus } from "@apiark/types";
+import type { AuthConfig, BodyType, RequestBody, KeyValuePair, OAuth2GrantType, OAuthTokenStatus } from "@apiark/types";
 import { oauthStartFlow, oauthGetTokenStatus, oauthClearToken } from "@/lib/tauri-api";
 import { HintTooltip } from "@/components/ui/hint-tooltip";
 import { CodeEditor } from "@/components/ui/code-editor";
+import { Plus, Trash2, FileUp } from "lucide-react";
 
 /** Extract :paramName path variables from a URL */
 function extractPathVariables(url: string): string[] {
@@ -41,18 +42,19 @@ export function RequestPanel() {
     setHeaders,
     setBody,
     setAuth,
+    setUrl,
+    setPathVariables,
     setPreRequestScript,
     setPostResponseScript,
     setTestScript,
     setAssertions,
-    setUrl,
   } = useTabStore();
 
   const pathVars = useMemo(() => tab ? extractPathVariables(tab.url) : [], [tab?.url]);
 
   if (!tab) return null;
 
-  const { params, headers, body, auth, url } = tab;
+  const { params, headers, body, auth, pathVariables } = tab;
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -94,13 +96,13 @@ export function RequestPanel() {
       <div className="flex-1 overflow-auto p-3">
         {activeTab === "params" && (
           <div className="relative space-y-4">
-            {pathVars.length > 0 && (
-              <PathVariablesEditor
-                url={url}
-                pathVars={pathVars}
-                onUrlChange={setUrl}
-              />
-            )}
+            <PathVariablesEditor
+              url={tab.url}
+              pathVars={pathVars}
+              values={pathVariables}
+              onChange={setPathVariables}
+              onUrlChange={setUrl}
+            />
             <KeyValueEditor
               pairs={params}
               onChange={setParams}
@@ -153,23 +155,29 @@ export function RequestPanel() {
 function PathVariablesEditor({
   url,
   pathVars,
+  values,
+  onChange,
   onUrlChange,
 }: {
   url: string;
   pathVars: string[];
+  values: Record<string, string>;
+  onChange: (pathVariables: Record<string, string>) => void;
   onUrlChange: (url: string) => void;
 }) {
-  // Extract current values from the URL
-  // We store a map of param name -> user-typed value
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [newVarName, setNewVarName] = useState("");
 
   const handleChange = (paramName: string, value: string) => {
-    setValues((prev) => ({ ...prev, [paramName]: value }));
+    onChange({ ...values, [paramName]: value });
+  };
 
-    // Replace :paramName with the value in the URL
-    if (value) {
-      onUrlChange(url.replace(new RegExp(`:${paramName}\\b`), value));
-    }
+  const handleAdd = () => {
+    const name = newVarName.trim();
+    if (!name || pathVars.includes(name)) return;
+    // Append :paramName to the URL
+    const separator = url.endsWith("/") ? "" : "/";
+    onUrlChange(`${url}${separator}:${name}`);
+    setNewVarName("");
   };
 
   return (
@@ -193,6 +201,144 @@ function PathVariablesEditor({
           </div>
         ))}
       </div>
+      <div className="mt-2 flex gap-2">
+        <input
+          type="text"
+          value={newVarName}
+          onChange={(e) => setNewVarName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+          placeholder="Variable name"
+          className="flex-1 rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={!newVarName.trim() || pathVars.includes(newVarName.trim())}
+          className="rounded bg-[var(--color-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] disabled:opacity-40"
+        >
+          + Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+let formKvCounter = 0;
+const formKvId = () => `kv_fd_${Date.now()}_${++formKvCounter}`;
+
+function FormDataEditor({
+  pairs,
+  onChange,
+}: {
+  pairs: KeyValuePair[];
+  onChange: (pairs: KeyValuePair[]) => void;
+}) {
+  const update = (index: number, field: string, value: string | boolean) => {
+    const updated = pairs.map((p, i) =>
+      i === index ? { ...p, [field]: value } : p,
+    );
+    onChange(updated);
+  };
+
+  const addRow = () => {
+    onChange([...pairs, { id: formKvId(), key: "", value: "", enabled: true }]);
+  };
+
+  const removeRow = (index: number) => {
+    if (pairs.length <= 1) {
+      onChange([{ id: formKvId(), key: "", value: "", enabled: true }]);
+      return;
+    }
+    onChange(pairs.filter((_, i) => i !== index));
+  };
+
+  const pickFile = async (index: number) => {
+    try {
+      const { open } = await import("@tauri-apps/plugin-dialog");
+      const selected = await open({ multiple: false });
+      if (selected) {
+        const path = typeof selected === "string" ? selected : selected;
+        const updated = pairs.map((p, i) =>
+          i === index ? { ...p, value: path as string, valueType: "file" as const } : p,
+        );
+        onChange(updated);
+      }
+    } catch {
+      // dialog cancelled
+    }
+  };
+
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-[auto_1fr_1fr_auto_auto] items-center gap-2 px-1 text-xs text-[var(--color-text-muted)]">
+        <span className="w-5" />
+        <span>Field</span>
+        <span>Value</span>
+        <span className="w-7" />
+        <span className="w-7" />
+      </div>
+
+      {pairs.map((pair, index) => (
+        <div
+          key={pair.id}
+          className="grid grid-cols-[auto_1fr_1fr_auto_auto] items-center gap-2 px-1"
+        >
+          <input
+            type="checkbox"
+            checked={pair.enabled}
+            onChange={(e) => update(index, "enabled", e.target.checked)}
+            className="h-4 w-4 accent-blue-500"
+          />
+          <input
+            type="text"
+            value={pair.key}
+            onChange={(e) => update(index, "key", e.target.value)}
+            placeholder="Field"
+            className="rounded bg-[var(--color-elevated)] px-2 py-1 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)] outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              value={pair.value}
+              onChange={(e) => {
+                const updated = pairs.map((p, i) =>
+                  i === index ? { ...p, value: e.target.value, valueType: undefined } : p,
+                );
+                onChange(updated);
+              }}
+              placeholder={pair.valueType === "file" ? "File path" : "Value"}
+              className={`min-w-0 flex-1 rounded bg-[var(--color-elevated)] px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500 ${
+                pair.valueType === "file"
+                  ? "text-violet-400 placeholder-violet-400/50"
+                  : "text-[var(--color-text-primary)] placeholder-[var(--color-text-dimmed)]"
+              }`}
+            />
+            <button
+              onClick={() => pickFile(index)}
+              className={`shrink-0 rounded p-1 transition-colors ${
+                pair.valueType === "file"
+                  ? "bg-violet-500/20 text-violet-400"
+                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+              }`}
+              title="Embed file content"
+            >
+              <FileUp className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <button
+            onClick={() => removeRow(index)}
+            className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-red-400"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+
+      <button
+        onClick={addRow}
+        className="flex items-center gap-1 px-1 pt-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+      >
+        <Plus className="h-3 w-3" /> Add
+      </button>
     </div>
   );
 }
@@ -330,12 +476,19 @@ function BodyEditor({
         />
       )}
 
-      {(body.type === "form-data" || body.type === "urlencoded") && (
+      {body.type === "urlencoded" && (
         <KeyValueEditor
           pairs={body.formData.length > 0 ? body.formData : [{ id: `kv_formdata_${Date.now()}`, key: "", value: "", enabled: true }]}
           onChange={(formData) => onChange({ ...body, formData })}
           keyPlaceholder="Field"
           valuePlaceholder="Value"
+        />
+      )}
+
+      {body.type === "form-data" && (
+        <FormDataEditor
+          pairs={body.formData.length > 0 ? body.formData : [{ id: `kv_formdata_${Date.now()}`, key: "", value: "", enabled: true }]}
+          onChange={(formData) => onChange({ ...body, formData })}
         />
       )}
     </div>

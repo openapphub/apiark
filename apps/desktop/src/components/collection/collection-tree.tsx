@@ -450,9 +450,9 @@ function TreeNodeRow({
             <GripVertical className="h-3 w-3 text-[var(--color-text-muted)]" />
           </span>
           <span
-            className={`w-9 shrink-0 text-[10px] font-bold ${METHOD_COLORS[node.method]}`}
+            className={`w-9 shrink-0 text-[10px] font-bold ${node.isGraphql ? "text-violet-400" : METHOD_COLORS[node.method]}`}
           >
-            {node.method}
+            {node.isGraphql ? "GQL" : node.method}
           </span>
           {renaming ? (
             <input
@@ -557,7 +557,42 @@ function TreeNodeRow({
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="truncate text-[var(--color-text-primary)]">{node.name}</span>
+          <span className="flex-1 truncate text-[var(--color-text-primary)]">{node.name}</span>
+        )}
+        {/* Action buttons — visible on hover */}
+        {!renaming && (
+          <span className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
+            {node.type === "folder" && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleRename(); }}
+                  className="rounded p-0.5 text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+                  title="Rename"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                  className="rounded p-0.5 text-[var(--color-text-muted)] hover:bg-red-500/20 hover:text-red-400"
+                  title="Delete"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </>
+            )}
+            {node.type === "collection" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  useCollectionStore.getState().closeCollection(collectionPath);
+                }}
+                className="rounded p-0.5 text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+                title="Close Collection"
+              >
+                <FolderX className="h-3 w-3" />
+              </button>
+            )}
+          </span>
         )}
       </button>
 
@@ -651,8 +686,19 @@ function TreeNodeRow({
                           { title: "Confirm Delete", kind: "warning" },
                         );
                         if (!confirmed) return;
-                        await deleteItem(node.path, collectionName, collectionPath);
+                        // Close the collection first so the file watcher and
+                        // refreshCollection don't race against the deletion.
                         useCollectionStore.getState().closeCollection(collectionPath);
+                        const { deleteItem: deleteItemApi } = await import("@/lib/tauri-api");
+                        const trashPath = await deleteItemApi(node.path, collectionName);
+                        const { useUndoStore } = await import("@/stores/undo-store");
+                        useUndoStore.getState().pushUndo({
+                          type: "delete",
+                          path: node.path,
+                          collectionPath,
+                          collectionName,
+                          trashPath,
+                        });
                       } catch (err) {
                         import("@/stores/toast-store").then(({ useToastStore }) =>
                           useToastStore.getState().showError(`Failed to delete collection: ${err}`),

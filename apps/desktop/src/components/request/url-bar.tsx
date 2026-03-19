@@ -289,18 +289,24 @@ export const UrlBar = forwardRef<HTMLInputElement>(function UrlBar(_props, ref) 
 
   return (
     <div data-tour="url-bar" className="flex items-center gap-3 bg-[var(--color-card)] px-4 py-3">
-      {/* Method selector */}
-      <select
-        value={tab.method}
-        onChange={(e) => setMethod(e.target.value as HttpMethod)}
-        className={`${METHOD_COLORS[tab.method]} ${METHOD_BG[tab.method]} cursor-pointer rounded-lg px-3 py-2 text-sm font-bold outline-none transition-colors focus:ring-2 focus:ring-[var(--color-accent)]/50`}
-      >
-        {METHODS.map((m) => (
-          <option key={m} value={m} className="text-[var(--color-text-primary)] bg-[var(--color-elevated)]">
-            {m}
-          </option>
-        ))}
-      </select>
+      {/* Method selector — show static GQL badge for GraphQL tabs */}
+      {tab.protocol === "graphql" ? (
+        <span className="rounded-lg bg-violet-500/15 px-3 py-2 text-sm font-bold text-violet-400">
+          GQL
+        </span>
+      ) : (
+        <select
+          value={tab.method}
+          onChange={(e) => setMethod(e.target.value as HttpMethod)}
+          className={`${METHOD_COLORS[tab.method]} ${METHOD_BG[tab.method]} cursor-pointer rounded-lg px-3 py-2 text-sm font-bold outline-none transition-colors focus:ring-2 focus:ring-[var(--color-accent)]/50`}
+        >
+          {METHODS.map((m) => (
+            <option key={m} value={m} className="text-[var(--color-text-primary)] bg-[var(--color-elevated)]">
+              {m}
+            </option>
+          ))}
+        </select>
+      )}
 
       {/* URL input with variable highlighting overlay */}
       <div className="relative flex-1">

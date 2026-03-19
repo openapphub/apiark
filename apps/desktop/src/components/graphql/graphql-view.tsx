@@ -76,8 +76,8 @@ export function GraphQLView() {
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* URL Bar */}
       <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
-        <span className="rounded bg-yellow-500/20 px-2 py-0.5 text-xs font-bold text-yellow-500">
-          POST
+        <span className="rounded bg-violet-500/20 px-2 py-0.5 text-xs font-bold text-violet-400">
+          GQL
         </span>
         <input
           type="text"
