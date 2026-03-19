@@ -429,9 +429,13 @@ mod tests {
 
         match &result.items[0] {
             ImportItem::Request { url, params, .. } => {
-                assert_eq!(url, "{{hostUrl}}/order/name/:name",
-                    "URL should keep :placeholder");
-                let p = params.as_ref().expect("params should contain path variables");
+                assert_eq!(
+                    url, "{{hostUrl}}/order/name/:name",
+                    "URL should keep :placeholder"
+                );
+                let p = params
+                    .as_ref()
+                    .expect("params should contain path variables");
                 assert_eq!(p.get("name").unwrap(), "Mujo Hasic");
             }
             _ => panic!("expected request"),
@@ -464,9 +468,13 @@ mod tests {
 
         match &result.items[0] {
             ImportItem::Request { url, params, .. } => {
-                assert_eq!(url, "{{hostUrl}}/users/:userId/posts/:postId",
-                    "URL should keep :placeholders");
-                let p = params.as_ref().expect("params should contain path variables");
+                assert_eq!(
+                    url, "{{hostUrl}}/users/:userId/posts/:postId",
+                    "URL should keep :placeholders"
+                );
+                let p = params
+                    .as_ref()
+                    .expect("params should contain path variables");
                 assert_eq!(p.get("userId").unwrap(), "123");
                 assert_eq!(p.get("postId").unwrap(), "456");
             }
@@ -502,7 +510,9 @@ mod tests {
                     "empty value should keep :placeholder"
                 );
                 // Empty path variable value is still stored
-                let p = params.as_ref().expect("params should contain path variables");
+                let p = params
+                    .as_ref()
+                    .expect("params should contain path variables");
                 assert_eq!(p.get("id").unwrap(), "");
             }
             _ => panic!("expected request"),

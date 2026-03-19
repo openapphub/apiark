@@ -129,7 +129,11 @@ pub enum CollectionNode {
         name: String,
         method: HttpMethod,
         path: String,
-        #[serde(default, rename = "isGraphql", skip_serializing_if = "std::ops::Not::not")]
+        #[serde(
+            default,
+            rename = "isGraphql",
+            skip_serializing_if = "std::ops::Not::not"
+        )]
         is_graphql: bool,
     },
 }
@@ -170,7 +174,10 @@ body:
     fn test_request_meta_detects_graphql_multiline() {
         let yaml = "name: Test\nmethod: POST\nurl: https://countries.trevorblades.com/graphql\nheaders:\n  Content-Type: application/json\nbody:\n  type: json\n  content: |-\n    {\n      \"query\": \"query { countries { name } }\"\n    }\n";
         let meta: RequestMeta = serde_yaml::from_str(yaml).unwrap();
-        assert!(meta.is_graphql(), "should detect GraphQL with multiline body content");
+        assert!(
+            meta.is_graphql(),
+            "should detect GraphQL with multiline body content"
+        );
     }
 
     #[test]
