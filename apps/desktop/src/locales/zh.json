@@ -23,7 +23,7 @@
     "close": "关闭",
     "closeOthers": "关闭其他",
     "closeAll": "关闭全部",
-    "noTabs": "从侧边栏打开一个请求，或按 {{shortcut}} 创建一个"
+    "noTabs": "从侧边栏打开请求，或按 {{shortcut}} 创建新请求"
   },
   "request": {
     "send": "发送",
@@ -50,8 +50,8 @@
   "body": {
     "json": "JSON",
     "xml": "XML",
-    "formData": "Form Data",
-    "urlencoded": "URL Encoded",
+    "formData": "表单数据",
+    "urlencoded": "URL 编码",
     "raw": "原始",
     "binary": "二进制",
     "none": "无"
@@ -60,11 +60,11 @@
     "type": "认证类型",
     "none": "无认证",
     "bearer": "Bearer Token",
-    "basic": "Basic Auth",
+    "basic": "Basic 认证",
     "apiKey": "API Key",
     "oauth2": "OAuth 2.0",
-    "digest": "Digest Auth",
-    "awsV4": "AWS Signature v4",
+    "digest": "Digest 认证",
+    "awsV4": "AWS 签名 v4",
     "ntlm": "NTLM",
     "jwtBearer": "JWT Bearer",
     "token": "令牌",
@@ -75,17 +75,17 @@
   "response": {
     "body": "响应体",
     "headers": "响应头",
-    "cookies": "Cookies",
+    "cookies": "Cookie",
     "tests": "测试",
     "timing": "耗时",
-    "pretty": "格式化",
+    "pretty": "美化",
     "raw": "原始",
     "preview": "预览",
     "noResponse": "发送请求以查看响应",
     "copyResponse": "复制响应",
     "saveToFile": "保存到文件",
     "loadFullResponse": "加载完整响应",
-    "truncated": "响应已截断 ({{size}})。显示前 1MB。",
+    "truncated": "响应已截断（{{size}}），显示前 1MB。",
     "status": {
       "success": "成功",
       "redirect": "重定向",
@@ -101,15 +101,15 @@
     "name": "名称",
     "variables": "变量",
     "secrets": "密钥",
-    "noEnvironments": "创建环境以在请求之间管理变量",
+    "noEnvironments": "创建环境以跨请求管理变量",
     "variableHint": "使用 {{syntax}} 设置动态值"
   },
   "history": {
     "title": "历史记录",
     "search": "搜索历史...",
     "clear": "清除历史",
-    "clearConfirm": "确定要清除所有历史记录吗？",
-    "noHistory": "发送你的第一个请求，它将显示在这里",
+    "clearConfirm": "确定要清除全部历史记录吗？",
+    "noHistory": "发送首个请求后，这里会显示历史记录",
     "restore": "恢复"
   },
   "settings": {
@@ -121,17 +121,17 @@
     "system": "跟随系统",
     "sidebarWidth": "侧边栏宽度",
     "network": "网络",
-    "sslVerification": "SSL 证书验证",
+    "sslVerification": "SSL 证书校验",
     "followRedirects": "跟随重定向",
-    "timeout": "请求超时 (ms)",
+    "timeout": "请求超时（ms）",
     "proxyUrl": "代理 URL",
-    "proxyUsername": "用户名 (可选)",
-    "proxyPassword": "密码 (可选)",
+    "proxyUsername": "用户名（可选）",
+    "proxyPassword": "密码（可选）",
     "certificates": "证书",
-    "caCert": "自定义 CA 证书 (PEM)",
-    "clientCert": "客户端证书 (PEM)",
-    "clientKey": "客户端密钥 (PEM)",
-    "pfxPassphrase": "PFX 密码",
+    "caCert": "自定义 CA 证书（PEM）",
+    "clientCert": "客户端证书（PEM）",
+    "clientKey": "客户端私钥（PEM）",
+    "pfxPassphrase": "PFX 密码短语",
     "backup": "备份",
     "includeHistory": "导出时包含历史记录",
     "exportState": "导出应用状态",
@@ -141,18 +141,18 @@
     "updates": "更新",
     "updateChannel": "更新通道",
     "stable": "稳定版",
-    "beta": "Beta",
-    "nightly": "Nightly",
+    "beta": "测试版",
+    "nightly": "夜间版",
     "checkForUpdates": "检查更新",
-    "upToDate": "已是最新版本",
-    "updateAvailable": "有可用更新：{{version}}"
+    "upToDate": "当前已是最新版本",
+    "updateAvailable": "发现可用更新：{{version}}"
   },
   "runner": {
     "title": "集合运行器",
     "run": "运行",
     "stop": "停止",
     "iterations": "迭代次数",
-    "delay": "延迟 (ms)",
+    "delay": "延迟（ms）",
     "dataFile": "数据文件",
     "results": "结果",
     "passed": "通过",
@@ -170,7 +170,7 @@
     "success": "导入成功",
     "requestCount": "{{count}} 个请求",
     "folderCount": "{{count}} 个文件夹",
-    "warnings": "{{count}} 个警告"
+    "warnings": "{{count}} 条警告"
   },
   "export": {
     "title": "导出集合",
@@ -202,20 +202,20 @@
     "browse": "浏览..."
   },
   "errors": {
-    "connectionRefused": "连接被拒绝 — 服务器是否正在运行？",
+    "connectionRefused": "连接被拒绝，请确认服务是否已启动",
     "timeout": "请求超时",
-    "dnsFailure": "DNS 解析失败 — 请检查 URL",
-    "tlsError": "TLS/SSL 错误 — 请检查证书设置",
+    "dnsFailure": "DNS 解析失败，请检查 URL",
+    "tlsError": "TLS/SSL 错误，请检查证书设置",
     "networkError": "网络错误",
     "autoSaveFailed": "自动保存失败：{{reason}}",
-    "fileDeleted": "此文件已被删除",
-    "fileChanged": "此文件已被外部修改",
-    "mergeConflict": "此文件存在合并冲突。请在编辑器或 Git 工具中解决。"
+    "fileDeleted": "该文件已被删除",
+    "fileChanged": "该文件已被外部修改",
+    "mergeConflict": "该文件存在合并冲突，请在编辑器或 Git 工具中解决。"
   },
   "onboarding": {
     "welcome": "欢迎使用 ApiArk",
-    "tagline": "本地优先的 API 开发。无需账户。无需云端。全部功能。",
-    "startScratch": "从头开始",
+    "tagline": "本地优先的 API 开发体验。无需账号，无需云端，功能完整。",
+    "startScratch": "从零开始",
     "importExisting": "导入现有集合",
     "openFolder": "打开文件夹",
     "chooseTheme": "选择主题"
@@ -273,11 +273,11 @@
     "deletedAt": "删除于 {{date}}"
   },
   "migration": {
-    "title": "集合格式更新",
-    "message": "此集合使用格式 v{{old}}。当前版本为 v{{new}}。",
+    "title": "集合格式升级",
+    "message": "此集合使用格式 v{{old}}，当前版本为 v{{new}}。",
     "upgrade": "升级",
     "readOnly": "以只读方式打开",
-    "upgradeHint": "升级将重写集合文件。请先提交你的更改。"
+    "upgradeHint": "升级会重写集合文件，建议先提交当前更改。"
   },
   "websocket": {
     "connect": "连接",
